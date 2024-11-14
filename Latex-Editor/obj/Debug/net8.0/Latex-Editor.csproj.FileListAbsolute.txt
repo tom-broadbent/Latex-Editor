@@ -66,3 +66,4 @@ C:\Users\tom\OneDrive\Documents\Computer Science\Friendly latex editor\Latex-Edi
 C:\Users\tom\OneDrive\Documents\Computer Science\Friendly latex editor\Latex-Editor\Latex-Editor\obj\Debug\net8.0\Latex-Ed.289EEAFF.Up2Date
 C:\Users\tom\OneDrive\Documents\Computer Science\Friendly latex editor\Latex-Editor\Latex-Editor\obj\Debug\net8.0\Latex-Editor.genruntimeconfig.cache
 C:\Users\tom\OneDrive\Documents\Computer Science\Friendly latex editor\Latex-Editor\Latex-Editor\obj\Debug\net8.0\ref\Latex-Editor.dll
+C:\Users\tom\OneDrive\Documents\Computer Science\Friendly latex editor\Latex-Editor\Latex-Editor\obj\Debug\net8.0\Latex-Editor.sourcelink.json

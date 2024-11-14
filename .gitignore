@@ -1,2 +1,4 @@
 GetStartedApp/
 .vs/
+bin/
+obj/

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Latex-Editor")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ae39c9a316c27b510dbc3635d17177084965db55")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c9a86e4c85cb06863644a08717b49fdb9e9d0022")]
 [assembly: System.Reflection.AssemblyProductAttribute("Latex-Editor")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Latex-Editor")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
