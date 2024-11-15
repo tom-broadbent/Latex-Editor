@@ -50,21 +50,13 @@ public partial class MainWindowViewModel : ViewModelBase
             var file = await DoOpenFilePickerAsync();
             if (file is null) return;
 
-            // Limit the text file to 1MB so that the demo won't lag.
-            if ((await file.GetBasicPropertiesAsync()).Size <= 1024 * 1024 * 1)
-            {
-                await using var readStream = await file.OpenReadAsync();
-                using var reader = new StreamReader(readStream);
-                Text = await reader.ReadToEndAsync(token);
-                OpenFileName = file.Name;
-                openFilePath = file.Path;
-                var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow;
-                window.Title = Constants.ApplicationName + " - " + OpenFileName;
-            }
-            else
-            {
-                throw new Exception("File exceeded 1MB limit.");
-            }
+            await using var readStream = await file.OpenReadAsync();
+            using var reader = new StreamReader(readStream);
+            Text = await reader.ReadToEndAsync(token);
+            OpenFileName = file.Name;
+            openFilePath = file.Path;
+            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow;
+            window.Title = Constants.ApplicationName + " - " + OpenFileName;
         }
         catch (Exception e)
         {
@@ -80,21 +72,13 @@ public partial class MainWindowViewModel : ViewModelBase
             var file = await DoSaveFilePickerAsync();
             if (file is null) return;
 
-            // Limit the text file to 1MB so that the demo won't lag.
-            if (Text?.Length <= 1024 * 1024 * 1)
-            {
-                var stream = new MemoryStream(Encoding.Default.GetBytes(Text));
-                await using var writeStream = await file.OpenWriteAsync();
-                await stream.CopyToAsync(writeStream);
-                OpenFileName = file.Name;
-                openFilePath = file.Path;
-                var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow;
-                window.Title = Constants.ApplicationName + " - " + OpenFileName;
-            }
-            else
-            {
-                throw new Exception("File exceeded 1MB limit.");
-            }
+            var stream = new MemoryStream(Encoding.Default.GetBytes(Text));
+            await using var writeStream = await file.OpenWriteAsync();
+            await stream.CopyToAsync(writeStream);
+            OpenFileName = file.Name;
+            openFilePath = file.Path;
+            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow;
+            window.Title = Constants.ApplicationName + " - " + OpenFileName;
         }
         catch (Exception e)
         {
