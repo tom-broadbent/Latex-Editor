@@ -21,8 +21,10 @@
 
     <Menu Grid.Row="0">
       <MenuItem Header="_File">
-        <MenuItem Command="{Binding OpenFileCommand}" Header="_Open"/>
-        <MenuItem Command="{Binding SaveAsFileCommand}" Header="_Save As"/>
+        <MenuItem Command="{Binding NewFileCommand}" Header="_New" HotKey="Ctrl+N"/>
+        <MenuItem Command="{Binding OpenFileCommand}" Header="_Open" HotKey="Ctrl+O"/>
+        <MenuItem Command="{Binding SaveFileCommand}" Header="_Save" HotKey="Ctrl+S"/>
+        <MenuItem Command="{Binding SaveAsFileCommand}" Header="_Save As" HotKey="Ctrl+Shift+S"/>
         <Separator/>
         <MenuItem Header="_Exit"/>
       </MenuItem>

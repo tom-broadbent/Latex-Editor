@@ -26,7 +26,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private string applicationName = Constants.ApplicationName;
 
-    private Uri? openFilePath;
+    private string? openFilePath;
 
     public string LatexText { get; set; } = "";
 
@@ -43,6 +43,16 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private void NewFile()
+    {
+        OpenFileName = null;
+        openFilePath = null;
+        var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow;
+        window.Title = Constants.ApplicationName;
+        Text = "";
+    }
+
+    [RelayCommand]
     private async Task OpenFile(CancellationToken token)
     {
         try
@@ -54,9 +64,9 @@ public partial class MainWindowViewModel : ViewModelBase
             using var reader = new StreamReader(readStream);
             Text = await reader.ReadToEndAsync(token);
             OpenFileName = file.Name;
-            openFilePath = file.Path;
+            openFilePath = file.TryGetLocalPath();
             var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow;
-            window.Title = Constants.ApplicationName + " - " + OpenFileName;
+            window.Title = Constants.ApplicationName + " - " + openFilePath;
         }
         catch (Exception e)
         {
@@ -76,11 +86,24 @@ public partial class MainWindowViewModel : ViewModelBase
             await using var writeStream = await file.OpenWriteAsync();
             await stream.CopyToAsync(writeStream);
             OpenFileName = file.Name;
-            openFilePath = file.Path;
+            openFilePath = file.TryGetLocalPath();
             var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow;
-            window.Title = Constants.ApplicationName + " - " + OpenFileName;
+            window.Title = Constants.ApplicationName + " - " + openFilePath;
         }
         catch (Exception e)
+        {
+            throw;
+        }
+    }
+
+    [RelayCommand]
+    private async Task SaveFile()
+    {
+        try
+        {
+            File.WriteAllTextAsync(openFilePath.ToString(), Text);
+        }
+        catch
         {
             throw;
         }
