@@ -1,0 +1,40 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:LatexEditor.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="LatexEditor.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="{Binding ApplicationName}">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+  <Grid ColumnDefinitions="2*, *"
+      RowDefinitions="Auto, *, Auto"
+      x:Name="Root">
+
+    <Menu Grid.Row="0">
+      <MenuItem Header="_File">
+        <MenuItem Command="{Binding OpenFileCommand}" Header="_Open"/>
+        <MenuItem Command="{Binding SaveAsFileCommand}" Header="_Save As"/>
+        <Separator/>
+        <MenuItem Header="_Exit"/>
+      </MenuItem>
+      <MenuItem Header="_Edit">
+        <MenuItem Header="Copy"/>
+        <MenuItem Header="Paste"/>
+      </MenuItem>
+    </Menu>
+
+    <TextBox Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" VerticalAlignment="Stretch" AcceptsReturn="True" AcceptsTab="True" Text="{Binding Text}"></TextBox>
+    <Button Grid.Column="1" Grid.Row="1" Command="{Binding GetTextCommand}">Get</Button>
+    <Button Grid.Column="1" Grid.Row="2" Command="{Binding SetTextCommand}">Set</Button>
+    
+  </Grid>
+</Window>
