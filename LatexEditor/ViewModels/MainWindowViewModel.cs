@@ -9,6 +9,7 @@ using Avalonia.Platform.Storage;
 using Avalonia;
 using LatexEditor.Views;
 using System.Text;
+using System.Linq;
 
 namespace LatexEditor.ViewModels;
 
@@ -16,7 +17,6 @@ public partial class MainWindowViewModel : ViewModelBase
 {
 #pragma warning disable CA1822 // Mark members as static
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(GetTextCommand))]
     private string text = "";
 
     [ObservableProperty]
@@ -28,28 +28,18 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private string? openFilePath;
 
-    public string LatexText { get; set; } = "";
-
-    [RelayCommand]
-    private void GetText()
-    {
-        LatexText = Text;
-    }
-
-    [RelayCommand]
-    private void SetText()
-    {
-        Text = LatexText;
-    }
+    public string OriginalText { get; set; } = "";
 
     [RelayCommand]
     private void NewFile()
     {
         OpenFileName = null;
         openFilePath = null;
-        var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow;
+        var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
         window.Title = Constants.ApplicationName;
+        window.ChangesMade = false;
         Text = "";
+        OriginalText = Text;
     }
 
     [RelayCommand]
@@ -63,10 +53,12 @@ public partial class MainWindowViewModel : ViewModelBase
             await using var readStream = await file.OpenReadAsync();
             using var reader = new StreamReader(readStream);
             Text = await reader.ReadToEndAsync(token);
+            OriginalText = Text;
             OpenFileName = file.Name;
             openFilePath = file.TryGetLocalPath();
-            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow;
+            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
             window.Title = Constants.ApplicationName + " - " + openFilePath;
+            window.ChangesMade = false;
         }
         catch (Exception e)
         {
@@ -87,8 +79,10 @@ public partial class MainWindowViewModel : ViewModelBase
             await stream.CopyToAsync(writeStream);
             OpenFileName = file.Name;
             openFilePath = file.TryGetLocalPath();
-            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow;
+            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
             window.Title = Constants.ApplicationName + " - " + openFilePath;
+            window.ChangesMade = false;
+            OriginalText = Text;
         }
         catch (Exception e)
         {
@@ -102,6 +96,10 @@ public partial class MainWindowViewModel : ViewModelBase
         try
         {
             File.WriteAllTextAsync(openFilePath.ToString(), Text);
+            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
+            window.Title = Constants.ApplicationName + " - " + openFilePath;
+            window.ChangesMade = false;
+            OriginalText = Text;
         }
         catch
         {
