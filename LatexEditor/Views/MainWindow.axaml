@@ -3,6 +3,7 @@
         xmlns:vm="using:LatexEditor.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:avaloniaPdfViewer="clr-namespace:AvaloniaPdfViewer;assembly=AvaloniaPdfViewer"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="LatexEditor.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -15,9 +16,11 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-  <Grid ColumnDefinitions="2*, *"
+  <Grid ColumnDefinitions="2*, Auto, *"
       RowDefinitions="Auto, *, Auto"
       x:Name="Root">
+
+    <GridSplitter Grid.Column="1" Grid.RowSpan="3" Background="Gray" ResizeDirection="Columns"/>
 
     <Menu Grid.Row="0">
       <MenuItem Header="_File">
@@ -45,6 +48,10 @@
       Text="{Binding Text}"
       KeyUp="OnMakeChange"
     />
+
+    <Button Grid.Column="2" Grid.Row="0" Command="{Binding CompileLatexCommand}">Compile</Button>
+    <avaloniaPdfViewer:PdfViewer Grid.Column="2" Grid.Row="1" Source="{Binding PdfPath}"/>
+    <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding PdfPath}"></TextBlock>
     
   </Grid>
 </Window>

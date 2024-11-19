@@ -10,6 +10,7 @@ using Avalonia;
 using LatexEditor.Views;
 using System.Text;
 using System.Linq;
+using System.Diagnostics;
 
 namespace LatexEditor.ViewModels;
 
@@ -28,7 +29,49 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private string? openFilePath;
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CompileLatexCommand), nameof(OpenFileCommand), nameof(NewFileCommand))]
+    private string? pdfPath;
+
     public string OriginalText { get; set; } = "";
+
+    [RelayCommand]
+    private async Task CompileLatex()
+    {
+        if (openFilePath == null)
+        {
+           await SaveAsFile();
+        }
+
+        var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
+        if (window.ChangesMade)
+        {
+            await SaveFile();
+        }
+
+        ProcessStartInfo startInfo = new ProcessStartInfo
+        {
+            FileName = "pdflatex",
+            Arguments = $"-interaction=nonstopmode -output-directory=\"{Path.GetDirectoryName(openFilePath)}\" \"{openFilePath}\"",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        using (Process process = new Process())
+        {
+            process.StartInfo = startInfo;
+            process.Start();
+
+            string output = process.StandardOutput.ReadToEnd();
+            string errors = process.StandardError.ReadToEnd();
+
+            process.WaitForExit();
+        }
+
+        PdfPath = Path.ChangeExtension(openFilePath, ".pdf");
+    }
 
     [RelayCommand]
     private void NewFile()
@@ -40,6 +83,7 @@ public partial class MainWindowViewModel : ViewModelBase
         window.ChangesMade = false;
         Text = "";
         OriginalText = Text;
+        PdfPath = null;
     }
 
     [RelayCommand]
@@ -59,6 +103,7 @@ public partial class MainWindowViewModel : ViewModelBase
             var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
             window.Title = Constants.ApplicationName + " - " + openFilePath;
             window.ChangesMade = false;
+            PdfPath = null;
         }
         catch (Exception e)
         {
