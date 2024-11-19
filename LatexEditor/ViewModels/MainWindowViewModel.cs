@@ -9,7 +9,6 @@ using Avalonia.Platform.Storage;
 using Avalonia;
 using LatexEditor.Views;
 using System.Text;
-using System.Linq;
 using System.Diagnostics;
 
 namespace LatexEditor.ViewModels;
@@ -38,6 +37,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task CompileLatex()
     {
+        PdfPath = null;
+
         if (openFilePath == null)
         {
            await SaveAsFile();
@@ -103,7 +104,7 @@ public partial class MainWindowViewModel : ViewModelBase
             var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
             window.Title = Constants.ApplicationName + " - " + openFilePath;
             window.ChangesMade = false;
-            PdfPath = null;
+            PdfPath = Path.ChangeExtension(openFilePath, ".pdf");
         }
         catch (Exception e)
         {
