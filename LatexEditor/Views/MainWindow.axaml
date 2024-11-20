@@ -46,7 +46,7 @@
       Document="{Binding Document}"
       ShowLineNumbers="True"
       KeyUp="OnMakeChange"
-      FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
+      FontFamily="Consolas,Cascadia Code,Menlo,Monospace"
     />
 
 
