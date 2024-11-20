@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avaloniaPdfViewer="clr-namespace:AvaloniaPdfViewer;assembly=AvaloniaPdfViewer"
+        xmlns:AvaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="LatexEditor.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -37,17 +38,17 @@
       </MenuItem>
     </Menu>
 
-    <TextBox 
+    <AvaloniaEdit:TextEditor
       x:Name="textEditor"
       Grid.Column="0"
       Grid.Row="1"
       Grid.RowSpan="2"
-      VerticalAlignment="Stretch"
-      AcceptsReturn="True"
-      AcceptsTab="True"
-      Text="{Binding Text}"
+      Document="{Binding Document}"
+      ShowLineNumbers="True"
       KeyUp="OnMakeChange"
+      FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
     />
+
 
     <Button Grid.Column="2" Grid.Row="0" Command="{Binding CompileLatexCommand}">Compile</Button>
     <avaloniaPdfViewer:PdfViewer Grid.Column="2" Grid.Row="1" Source="{Binding PdfPath}"/>

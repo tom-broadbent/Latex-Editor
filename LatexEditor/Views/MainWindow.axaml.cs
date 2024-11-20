@@ -21,6 +21,7 @@ public partial class MainWindow : Window
     private void OnMakeChange(object? sender, Avalonia.Input.KeyEventArgs e)
     {
         var viewModel = DataContext as MainWindowViewModel;
+        viewModel.Text = viewModel.Document.Text;
         if(!ChangesMade && viewModel.Text != viewModel.OriginalText)
         {
             ChangesMade = true;

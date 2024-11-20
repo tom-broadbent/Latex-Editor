@@ -10,6 +10,7 @@ using Avalonia;
 using LatexEditor.Views;
 using System.Text;
 using System.Diagnostics;
+using AvaloniaEdit.Document;
 
 namespace LatexEditor.ViewModels;
 
@@ -33,6 +34,10 @@ public partial class MainWindowViewModel : ViewModelBase
     private string? pdfPath;
 
     public string OriginalText { get; set; } = "";
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(OpenFileCommand), nameof(NewFileCommand))]
+    private TextDocument document = new TextDocument();
 
     [RelayCommand]
     private async Task CompileLatex()
@@ -85,6 +90,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Text = "";
         OriginalText = Text;
         PdfPath = null;
+        Document.Text = Text;
     }
 
     [RelayCommand]
@@ -105,6 +111,7 @@ public partial class MainWindowViewModel : ViewModelBase
             window.Title = Constants.ApplicationName + " - " + openFilePath;
             window.ChangesMade = false;
             PdfPath = Path.ChangeExtension(openFilePath, ".pdf");
+            Document.Text = Text;
         }
         catch (Exception e)
         {
