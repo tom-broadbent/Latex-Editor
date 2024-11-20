@@ -1,7 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using AvaloniaEdit;
+using AvaloniaEdit.TextMate;
 using LatexEditor.ViewModels;
+using TextMateSharp.Grammars;
 
 namespace LatexEditor.Views;
 
@@ -12,6 +15,12 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        // set theming and syntax highlighting
+        var textEditor = this.FindControl<TextEditor>("textEditor");
+        var registryOptions = new RegistryOptions(ThemeName.DarkPlus);
+        var textMateInstallation = textEditor.InstallTextMate(registryOptions);
+        textMateInstallation.SetGrammar(registryOptions.GetScopeByLanguageId(registryOptions.GetLanguageByExtension(".tex").Id));
     }
 
     private void Binding(object? sender, Avalonia.Input.KeyEventArgs e)
