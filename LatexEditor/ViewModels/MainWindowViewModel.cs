@@ -11,6 +11,8 @@ using LatexEditor.Views;
 using System.Text;
 using System.Diagnostics;
 using AvaloniaEdit.Document;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia;
 
 namespace LatexEditor.ViewModels;
 
@@ -65,16 +67,29 @@ public partial class MainWindowViewModel : ViewModelBase
             CreateNoWindow = true
         };
 
-        using (Process process = new Process())
+        try
         {
-            process.StartInfo = startInfo;
-            process.Start();
+            using (Process process = new Process())
+            {
+                process.StartInfo = startInfo;
+                process.Start();
 
-            string output = process.StandardOutput.ReadToEnd();
-            string errors = process.StandardError.ReadToEnd();
+                string output = process.StandardOutput.ReadToEnd();
+                string errors = process.StandardError.ReadToEnd();
 
-            process.WaitForExit();
+                process.WaitForExit();
+            }
         }
+        catch (Exception e)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+            if (e.Message.Contains("pdflatex"))
+            {
+                box = MessageBoxManager.GetMessageBoxStandard("Error", "Could not find any TeX distribution installed. Make sure that a TeX distribution such as MiKTeX or TeX Live is installed, and that it has been added to your PATH", ButtonEnum.Ok, Icon.Error);
+            }
+            box.ShowAsync();
+        }
+        
 
         PdfPath = Path.ChangeExtension(openFilePath, ".pdf");
     }

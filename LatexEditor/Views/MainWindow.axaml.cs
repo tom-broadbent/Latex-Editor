@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using AvaloniaEdit;
 using AvaloniaEdit.TextMate;
 using LatexEditor.ViewModels;
