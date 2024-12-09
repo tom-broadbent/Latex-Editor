@@ -2,8 +2,10 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
+using AvaloniaEdit.Editing;
 using AvaloniaEdit.TextMate;
 using LatexEditor.ViewModels;
+using System.Linq;
 using TextMateSharp.Grammars;
 
 namespace LatexEditor.Views;
@@ -22,24 +24,37 @@ public partial class MainWindow : Window
         var registryOptions = new RegistryOptions(ThemeName.DarkPlus);
         var textMateInstallation = textEditor.InstallTextMate(registryOptions);
         textMateInstallation.SetGrammar(registryOptions.GetScopeByLanguageId(registryOptions.GetLanguageByExtension(".tex").Id));
-        textEditor.TextArea.TextEntered += OnTextEntered;
+        textEditor.KeyUp += OnTextEntered;
+
+        LatexCompletionDataLoader.LoadFromDirectory("Completion");
     }
 
     private void Binding(object? sender, Avalonia.Input.KeyEventArgs e)
     {
     }
 
-    private void OnTextEntered(object? sender, Avalonia.Input.TextInputEventArgs e)
+    private void OnTextEntered(object? sender, Avalonia.Input.KeyEventArgs e)
     {
         var viewModel = DataContext as MainWindowViewModel;
         viewModel.Text = viewModel.Document.Text;
-        if(!ChangesMade && viewModel.Text != viewModel.OriginalText)
+        if (!ChangesMade && viewModel.Text != viewModel.OriginalText)
         {
             ChangesMade = true;
             this.Title += " *";
         }
-        /*ShowCompletion();
-        ShowInsight();*/
+
+        if (!string.IsNullOrWhiteSpace(e.KeySymbol) && viewModel.Text.Length > 0)
+        {
+            ShowCompletion();
+            //ShowInsight();
+        }
+        else
+        {
+            if (completionWindow is not null && !string.IsNullOrEmpty(e.KeySymbol))
+            {
+                completionWindow.Close();
+            }
+        }
     }
 
     private void ShowCompletion()
@@ -47,10 +62,24 @@ public partial class MainWindow : Window
         completionWindow = new CompletionWindow(textEditor.TextArea);
         completionWindow.Closed += (_, _) => completionWindow = null;
 
+        var offset = textEditor.TextArea.Caret.Offset;
+        var document = textEditor.TextArea.Document;
+
+        int startOffset = offset;
+        while (startOffset > 0 && !char.IsWhiteSpace(document.GetCharAt(startOffset - 1)))
+        {
+            startOffset--;
+        }
+
+        int length = offset - startOffset;
+        string word = document.GetText(startOffset, length);
+
         var data = completionWindow.CompletionList.CompletionData;
-        data.Add(new LatexCompletionData("Item1"));
-        data.Add(new LatexCompletionData("Item2"));
-        data.Add(new LatexCompletionData("Item3"));
+        foreach (var item in LatexCompletionDataLoader.Data.Where(s => s.StartsWith(word)))
+        {
+            data.Add(new LatexCompletionData(item));
+        }
+        
 
         completionWindow.Show();
     }

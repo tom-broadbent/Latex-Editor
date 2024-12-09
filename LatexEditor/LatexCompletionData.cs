@@ -30,7 +30,18 @@ namespace LatexEditor
 
         public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
         {
-            textArea.Document.Replace(completionSegment, Text);
+            var offset = textArea.Caret.Offset;
+            var document = textArea.Document;
+
+            int startOffset = offset;
+            while (startOffset > 0 && !char.IsWhiteSpace(document.GetCharAt(startOffset - 1)))
+            {
+                startOffset--;
+            }
+
+            int length = offset - startOffset;
+
+            document.Replace(startOffset, length, Text);
         }
 
         Control BuildContentControl()
