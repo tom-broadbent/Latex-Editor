@@ -21,6 +21,7 @@ namespace LatexEditor
                 var list = GetFromFile(path);
                 Data.AddRange(list);
             }
+            Data.Sort();
         }
 
         public static void LoadFromFile(string path)
@@ -28,6 +29,7 @@ namespace LatexEditor
             Data.Clear();
             var list = GetFromFile(path);
             Data.AddRange(list);
+            Data.Sort();
         }
 
         public static List<string> GetFromFile(string path)
@@ -38,13 +40,16 @@ namespace LatexEditor
                 while (!streamReader.EndOfStream)
                 {
                     var line = streamReader.ReadLine();
-                    if (line is not null)
+                    if (!string.IsNullOrEmpty(line))
                     {
-                        // remove comments
-                        line = line.Split('#')[0];
-                        if(line.Length > 0)
+                        if (line[0] == '\\')
                         {
-                            list.Add(line);
+                            // remove comments
+                            line = line.Split('#')[0];
+                            if (line.Length > 0)
+                            {
+                                list.Add(line);
+                            }
                         }
                     }
                 }
