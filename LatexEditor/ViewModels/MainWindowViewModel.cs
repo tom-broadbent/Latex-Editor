@@ -13,6 +13,9 @@ using System.Diagnostics;
 using AvaloniaEdit.Document;
 using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
+using System.Reflection;
+using Avalonia.Controls;
+using Avalonia.Media;
 
 namespace LatexEditor.ViewModels;
 

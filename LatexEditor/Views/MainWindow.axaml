@@ -49,8 +49,8 @@
     />
 
 
-    <Button Grid.Column="2" Grid.Row="0" Command="{Binding CompileLatexCommand}">Compile</Button>
-    <avaloniaPdfViewer:PdfViewer Grid.Column="2" Grid.Row="1" Source="{Binding PdfPath}"/>
+    <Button Grid.Column="2" Grid.Row="0" Command="{Binding CompileLatexCommand}" HotKey="F5">Compile</Button>
+    <avaloniaPdfViewer:PdfViewer x:Name="pdfViewer" Grid.Column="2" Grid.Row="1" Source="{Binding PdfPath}"/>
     <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding PdfPath}"></TextBlock>
     
   </Grid>
