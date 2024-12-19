@@ -60,10 +60,20 @@ public partial class MainWindowViewModel : ViewModelBase
             await SaveFile();
         }
 
-        ProcessStartInfo startInfo = new ProcessStartInfo
+        ProcessStartInfo pdflatexInfo = new ProcessStartInfo
         {
             FileName = "pdflatex",
             Arguments = $"-interaction=nonstopmode -output-directory=\"{Path.GetDirectoryName(openFilePath)}\" \"{openFilePath}\"",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        ProcessStartInfo biberInfo = new ProcessStartInfo
+        {
+            FileName = "biber",
+            Arguments = $"\"{Path.ChangeExtension(openFilePath, "bcf")}\"",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -74,7 +84,29 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             using (Process process = new Process())
             {
-                process.StartInfo = startInfo;
+                process.StartInfo = pdflatexInfo;
+                process.Start();
+
+                string output = process.StandardOutput.ReadToEnd();
+                string errors = process.StandardError.ReadToEnd();
+
+                process.WaitForExit();
+            }
+
+            using (Process process = new Process())
+            {
+                process.StartInfo = biberInfo;
+                process.Start();
+
+                string output = process.StandardOutput.ReadToEnd();
+                string errors = process.StandardError.ReadToEnd();
+
+                process.WaitForExit();
+            }
+
+            using (Process process = new Process())
+            {
+                process.StartInfo = pdflatexInfo;
                 process.Start();
 
                 string output = process.StandardOutput.ReadToEnd();
