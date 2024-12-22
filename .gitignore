@@ -2,3 +2,4 @@ GetStartedApp/
 .vs/
 bin/
 obj/
+*.user
