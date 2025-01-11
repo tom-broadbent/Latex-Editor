@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
@@ -6,6 +7,8 @@ using AvaloniaEdit.Editing;
 using AvaloniaEdit.TextMate;
 using LatexEditor.ViewModels;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Threading;
 using TextMateSharp.Grammars;
 
 namespace LatexEditor.Views;
@@ -15,6 +18,7 @@ public partial class MainWindow : Window
     public bool ChangesMade = false;
     private CompletionWindow completionWindow;
     private OverloadInsightWindow insightWindow;
+    public TextMate.Installation TextMate;
 
     public MainWindow()
     {
@@ -22,9 +26,10 @@ public partial class MainWindow : Window
 
         // set theming and syntax highlighting
         var registryOptions = new RegistryOptions(ThemeName.DarkPlus);
-        var textMateInstallation = textEditor.InstallTextMate(registryOptions);
-        textMateInstallation.SetGrammar(registryOptions.GetScopeByLanguageId(registryOptions.GetLanguageByExtension(".tex").Id));
+        TextMate = textEditor.InstallTextMate(registryOptions);
+        TextMate.SetGrammar(registryOptions.GetScopeByLanguageId(registryOptions.GetLanguageByExtension(".tex").Id));
         textEditor.KeyUp += OnTextEntered;
+        fileTreeView.DoubleTapped += OnSelectTreeNode;
 
         LatexCompletionDataLoader.LoadFromDirectory("Completion");
     }
@@ -54,6 +59,17 @@ public partial class MainWindow : Window
             {
                 completionWindow.Close();
             }
+        }
+    }
+
+    private void OnSelectTreeNode(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        var viewModel = DataContext as MainWindowViewModel;
+        var item = fileTreeView.SelectedItem as DirectoryNode;
+        if (item.File != null)
+        {
+            var token = new CancellationToken();
+            viewModel.OpenFile(item.File, token);
         }
     }
 

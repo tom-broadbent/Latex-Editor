@@ -13,9 +13,9 @@ using System.Diagnostics;
 using AvaloniaEdit.Document;
 using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
-using System.Reflection;
+using System.Collections.ObjectModel;
 using Avalonia.Controls;
-using Avalonia.Media;
+using TextMateSharp.Grammars;
 
 namespace LatexEditor.ViewModels;
 
@@ -26,7 +26,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private string text = "";
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(OpenFileCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SelectFileCommand))]
     private string? openFileName;
 
     [ObservableProperty]
@@ -35,14 +35,34 @@ public partial class MainWindowViewModel : ViewModelBase
     private string? openFilePath;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(CompileLatexCommand), nameof(OpenFileCommand), nameof(NewFileCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CompileLatexCommand), nameof(SelectFileCommand), nameof(NewFileCommand))]
     private string? pdfPath;
 
     public string OriginalText { get; set; } = "";
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(OpenFileCommand), nameof(NewFileCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SelectFileCommand), nameof(NewFileCommand))]
     private TextDocument document = new TextDocument();
+
+    [ObservableProperty]
+    private ObservableCollection<DirectoryNode> fileTree = new ObservableCollection<DirectoryNode>();
+
+    internal async Task OpenFile(IStorageFile file, CancellationToken token)
+    {
+        await using var readStream = await file.OpenReadAsync();
+        using var reader = new StreamReader(readStream);
+        Text = await reader.ReadToEndAsync(token);
+        OriginalText = Text;
+        OpenFileName = file.Name;
+        openFilePath = file.TryGetLocalPath();
+        var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
+        window.Title = Constants.ApplicationName + " - " + openFilePath;
+        window.ChangesMade = false;
+        PdfPath = Path.ChangeExtension(openFilePath, ".pdf");
+        Document.Text = Text;
+        var regOpt = window.TextMate.RegistryOptions as RegistryOptions;
+        window.TextMate.SetGrammar(regOpt.GetScopeByLanguageId(regOpt.GetLanguageByExtension(Path.GetExtension(openFilePath)).Id));
+    }
 
     [RelayCommand]
     private async Task CompileLatex()
@@ -141,33 +161,63 @@ public partial class MainWindowViewModel : ViewModelBase
         OriginalText = Text;
         PdfPath = null;
         Document.Text = Text;
+        FileTree.Clear();
     }
 
     [RelayCommand]
-    private async Task OpenFile(CancellationToken token)
+    private async Task SelectFile(CancellationToken token)
     {
         try
         {
             var file = await DoOpenFilePickerAsync();
             if (file is null) return;
 
-            await using var readStream = await file.OpenReadAsync();
-            using var reader = new StreamReader(readStream);
-            Text = await reader.ReadToEndAsync(token);
-            OriginalText = Text;
-            OpenFileName = file.Name;
-            openFilePath = file.TryGetLocalPath();
-            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
-            window.Title = Constants.ApplicationName + " - " + openFilePath;
-            window.ChangesMade = false;
-            PdfPath = Path.ChangeExtension(openFilePath, ".pdf");
-            Document.Text = Text;
+            await OpenFile(file, token);
+            FileTree.Clear();
         }
         catch (Exception e)
         {
             throw;
         }
     }
+
+    private async Task<DirectoryNode> LoadFolder(IStorageFolder folder)
+    {
+        var items = folder.GetItemsAsync();
+        var folderNode = new DirectoryNode(folder.Name, new ObservableCollection<DirectoryNode>());
+        await foreach (var item in items)
+        {
+            if (item is IStorageFile fileItem)
+            {
+                folderNode.SubNodes.Add(new DirectoryNode(fileItem.Name, fileItem));
+            }
+            else if (item is IStorageFolder folderItem)
+            {
+                var loadedFolder = await LoadFolder(folderItem);
+                folderNode.SubNodes.Add(loadedFolder);
+            }
+        }
+        return folderNode;
+    }
+
+    [RelayCommand]
+    private async Task OpenFolder(CancellationToken token)
+    {
+        try
+        {
+            var folder = await DoOpenFolderPickerAsync();
+            if (folder is null) return;
+
+            FileTree.Clear();
+            var folderNode = await LoadFolder(folder);
+            FileTree.Add(folderNode);
+        }
+        catch(Exception e)
+        {
+            throw;
+        }
+    }
+    
 
     [RelayCommand]
     private async Task SaveAsFile()
@@ -212,13 +262,6 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private async Task<IStorageFile?> DoOpenFilePickerAsync()
     {
-        // For learning purposes, we opted to directly get the reference
-        // for StorageProvider APIs here inside the ViewModel. 
-
-        // For your real-world apps, you should follow the MVVM principles
-        // by making service classes and locating them with DI/IoC.
-
-        // See IoCFileOps project for an example of how to accomplish this.
         if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
             desktop.MainWindow?.StorageProvider is not { } provider)
             throw new NullReferenceException("Missing StorageProvider instance.");
@@ -228,19 +271,25 @@ public partial class MainWindowViewModel : ViewModelBase
             Title = "Open Text File",
             AllowMultiple = false
         });
-
         return files?.Count >= 1 ? files[0] : null;
+    }
+
+    private async Task<IStorageFolder?> DoOpenFolderPickerAsync()
+    {
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
+            desktop.MainWindow?.StorageProvider is not { } provider)
+            throw new NullReferenceException("Missing StorageProvider instance.");
+
+        var folder = await provider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
+        {
+            Title = "Open Directory",
+            AllowMultiple = false
+        });
+        return folder?.Count >= 1 ? folder[0] : null;
     }
 
     private async Task<IStorageFile?> DoSaveFilePickerAsync()
     {
-        // For learning purposes, we opted to directly get the reference
-        // for StorageProvider APIs here inside the ViewModel. 
-
-        // For your real-world apps, you should follow the MVVM principles
-        // by making service classes and locating them with DI/IoC.
-
-        // See DepInject project for a sample of how to accomplish this.
         if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
             desktop.MainWindow?.StorageProvider is not { } provider)
             throw new NullReferenceException("Missing StorageProvider instance.");

@@ -17,16 +17,18 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-  <Grid ColumnDefinitions="2*, Auto, *"
+  <Grid ColumnDefinitions="Auto, Auto, 2*, Auto, *"
       RowDefinitions="Auto, *, Auto"
       x:Name="Root">
-
-    <GridSplitter Grid.Column="1" Grid.RowSpan="3" Background="Gray" ResizeDirection="Columns"/>
+    
+    <GridSplitter Grid.Column="1" Grid.Row="1" Grid.RowSpan="2" Background="Gray" ResizeDirection="Columns"/>
+    <GridSplitter Grid.Column="3" Grid.Row="1" Grid.RowSpan="2" Background="Gray" ResizeDirection="Columns"/>
 
     <Menu Grid.Row="0">
       <MenuItem Header="_File">
         <MenuItem Command="{Binding NewFileCommand}" Header="_New" HotKey="Ctrl+N"/>
-        <MenuItem Command="{Binding OpenFileCommand}" Header="_Open" HotKey="Ctrl+O"/>
+        <MenuItem Command="{Binding SelectFileCommand}" Header="_Open" HotKey="Ctrl+O"/>
+        <MenuItem Command="{Binding OpenFolderCommand}" Header="_Open Folder"/>
         <MenuItem Command="{Binding SaveFileCommand}" Header="_Save" HotKey="Ctrl+S"/>
         <MenuItem Command="{Binding SaveAsFileCommand}" Header="_Save As" HotKey="Ctrl+Shift+S"/>
         <Separator/>
@@ -36,11 +38,20 @@
         <MenuItem Header="Copy"/>
         <MenuItem Header="Paste"/>
       </MenuItem>
+      <MenuItem Command="{Binding CompileLatexCommand}" Header="_Compile" HotKey="F5"/>
     </Menu>
 
+    <TreeView Name="fileTreeView" ItemsSource="{Binding FileTree}" Grid.Column="0" Grid.Row="1">
+      <TreeView.ItemTemplate>
+        <TreeDataTemplate ItemsSource="{Binding SubNodes}">
+          <TextBlock Text="{Binding Title}"/>
+        </TreeDataTemplate>
+      </TreeView.ItemTemplate>
+    </TreeView>
+    
     <AvaloniaEdit:TextEditor
       x:Name="textEditor"
-      Grid.Column="0"
+      Grid.Column="2"
       Grid.Row="1"
       Grid.RowSpan="2"
       Document="{Binding Document}"
@@ -49,9 +60,8 @@
     />
 
 
-    <Button Grid.Column="2" Grid.Row="0" Command="{Binding CompileLatexCommand}" HotKey="F5">Compile</Button>
-    <avaloniaPdfViewer:PdfViewer x:Name="pdfViewer" Grid.Column="2" Grid.Row="1" Source="{Binding PdfPath}"/>
-    <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding PdfPath}"></TextBlock>
+    <avaloniaPdfViewer:PdfViewer x:Name="pdfViewer" Grid.Column="4" Grid.Row="1" Source="{Binding PdfPath}"/>
+    <TextBlock Grid.Row="2" Grid.Column="4" Text="{Binding PdfPath}"></TextBlock>
     
   </Grid>
 </Window>
