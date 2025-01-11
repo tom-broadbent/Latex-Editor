@@ -177,27 +177,35 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         catch (Exception e)
         {
-            throw;
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+            box.ShowAsync();
         }
     }
 
     private async Task<DirectoryNode> LoadFolder(IStorageFolder folder)
     {
-        var items = folder.GetItemsAsync();
-        var folderNode = new DirectoryNode(folder.Name, new ObservableCollection<DirectoryNode>());
-        await foreach (var item in items)
+        try
         {
-            if (item is IStorageFile fileItem)
+            var items = folder.GetItemsAsync();
+            var folderNode = new DirectoryNode(folder.Name, new ObservableCollection<DirectoryNode>());
+            await foreach (var item in items)
             {
-                folderNode.SubNodes.Add(new DirectoryNode(fileItem.Name, fileItem));
+                if (item is IStorageFile fileItem)
+                {
+                    folderNode.SubNodes.Add(new DirectoryNode(fileItem.Name, fileItem));
+                }
+                else if (item is IStorageFolder folderItem)
+                {
+                    var loadedFolder = await LoadFolder(folderItem);
+                    folderNode.SubNodes.Add(loadedFolder);
+                }
             }
-            else if (item is IStorageFolder folderItem)
-            {
-                var loadedFolder = await LoadFolder(folderItem);
-                folderNode.SubNodes.Add(loadedFolder);
-            }
+            return folderNode;
         }
-        return folderNode;
+        catch(UnauthorizedAccessException e)
+        {
+            return new DirectoryNode(folder.Name);
+        }
     }
 
     [RelayCommand]
@@ -214,7 +222,8 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         catch(Exception e)
         {
-            throw;
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+            box.ShowAsync();
         }
     }
     
@@ -239,7 +248,8 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         catch (Exception e)
         {
-            throw;
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+            box.ShowAsync();
         }
     }
 
