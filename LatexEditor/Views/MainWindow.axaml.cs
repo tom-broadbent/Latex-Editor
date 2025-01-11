@@ -12,6 +12,7 @@ using System.Threading;
 using TextMateSharp.Grammars;
 using System;
 using Avalonia;
+using DynamicData;
 
 namespace LatexEditor.Views;
 
@@ -68,7 +69,7 @@ public partial class MainWindow : Window
     {
         var viewModel = DataContext as MainWindowViewModel;
         var item = fileTreeView.SelectedItem as DirectoryNode;
-        if (item.Path != null)
+        if (item != null && item.Path != null)
         {
             if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
             desktop.MainWindow?.StorageProvider is not { } provider)

@@ -190,12 +190,12 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private async Task<DirectoryNode> LoadFolder(IStorageFolder folder)
+    internal async Task<DirectoryNode> LoadFolder(IStorageFolder folder)
     {
         try
         {
             var items = folder.GetItemsAsync();
-            var folderNode = new DirectoryNode(folder.Name, new ObservableCollection<DirectoryNode>());
+            var folderNode = new DirectoryNode(folder.Name, new ObservableCollection<DirectoryNode>(), folder.Path);
             await foreach (var item in items)
             {
                 if (item is IStorageFile fileItem)
@@ -204,8 +204,23 @@ public partial class MainWindowViewModel : ViewModelBase
                 }
                 else if (item is IStorageFolder folderItem)
                 {
-                    var loadedFolder = await LoadFolder(folderItem);
-                    folderNode.SubNodes.Add(loadedFolder);
+                    var subDirNode = new DirectoryNode(folderItem.Name, new ObservableCollection<DirectoryNode>(), folderItem.Path);
+
+                    var items2 = folderItem.GetItemsAsync();
+                    await foreach (var item2 in items2)
+                    {
+                        if (item2 is IStorageFile fileItem2)
+                        {
+                            subDirNode.SubNodes.Add(new DirectoryNode(fileItem2.Name, fileItem2.Path));
+                        }
+                        else if (item2 is IStorageFolder folderItem2)
+                        {
+                            var subSubDirNode = new DirectoryNode(folderItem2.Name, new ObservableCollection<DirectoryNode>(), folderItem2.Path);
+                            subDirNode.SubNodes.Add(subSubDirNode);
+                        }
+                    }
+
+                    folderNode.SubNodes.Add(subDirNode);
                 }
             }
             return folderNode;
@@ -224,8 +239,8 @@ public partial class MainWindowViewModel : ViewModelBase
             var folder = await DoOpenFolderPickerAsync();
             if (folder is null) return;
 
-            FileTree.Clear();
             var folderNode = await LoadFolder(folder);
+            FileTree.Clear();
             FileTree.Add(folderNode);
         }
         catch(Exception e)
