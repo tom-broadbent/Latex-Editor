@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using LatexEditor.ViewModels;
 using LatexEditor.Views;
+using System;
 using System.Collections.ObjectModel;
 
 namespace LatexEditor
@@ -11,16 +12,16 @@ namespace LatexEditor
     {
         public ObservableCollection<DirectoryNode>? SubNodes { get; }
         public string Title { get; }
-        public IStorageFile File { get; }
+        public Uri Path { get; }
 
         public DirectoryNode(string title)
         {
             Title = title;
         }
-        public DirectoryNode(string title, IStorageFile file)
+        public DirectoryNode(string title, Uri path)
         {
             Title = title;
-            File = file;
+            Path = path;
         }
 
         public DirectoryNode(string title, ObservableCollection<DirectoryNode> subNodes)

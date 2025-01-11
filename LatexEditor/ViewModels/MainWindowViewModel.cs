@@ -61,7 +61,15 @@ public partial class MainWindowViewModel : ViewModelBase
         PdfPath = Path.ChangeExtension(openFilePath, ".pdf");
         Document.Text = Text;
         var regOpt = window.TextMate.RegistryOptions as RegistryOptions;
-        window.TextMate.SetGrammar(regOpt.GetScopeByLanguageId(regOpt.GetLanguageByExtension(Path.GetExtension(openFilePath)).Id));
+        var language = regOpt.GetLanguageByExtension(Path.GetExtension(openFilePath));
+        if (language != null)
+        {
+            window.TextMate.SetGrammar(regOpt.GetScopeByLanguageId(language.Id));
+        }
+        else
+        {
+            window.TextMate.SetGrammar("text.txt");
+        }
     }
 
     [RelayCommand]
@@ -192,7 +200,7 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 if (item is IStorageFile fileItem)
                 {
-                    folderNode.SubNodes.Add(new DirectoryNode(fileItem.Name, fileItem));
+                    folderNode.SubNodes.Add(new DirectoryNode(fileItem.Name, fileItem.Path));
                 }
                 else if (item is IStorageFolder folderItem)
                 {

@@ -10,6 +10,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using TextMateSharp.Grammars;
+using System;
+using Avalonia;
 
 namespace LatexEditor.Views;
 
@@ -62,14 +64,23 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnSelectTreeNode(object? sender, Avalonia.Input.TappedEventArgs e)
+    private async void OnSelectTreeNode(object? sender, Avalonia.Input.TappedEventArgs e)
     {
         var viewModel = DataContext as MainWindowViewModel;
         var item = fileTreeView.SelectedItem as DirectoryNode;
-        if (item.File != null)
+        if (item.Path != null)
         {
-            var token = new CancellationToken();
-            viewModel.OpenFile(item.File, token);
+            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
+            desktop.MainWindow?.StorageProvider is not { } provider)
+                throw new NullReferenceException("Missing StorageProvider instance.");
+
+            var file = await provider.TryGetFileFromPathAsync(item.Path);
+
+            if (file != null)
+            {
+                var token = new CancellationToken();
+                await viewModel.OpenFile(file, token);
+            }
         }
     }
 
