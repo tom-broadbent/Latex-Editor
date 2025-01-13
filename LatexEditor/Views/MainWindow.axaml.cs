@@ -1,18 +1,13 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Media;
-using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
-using AvaloniaEdit.Editing;
 using AvaloniaEdit.TextMate;
 using LatexEditor.ViewModels;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
 using TextMateSharp.Grammars;
 using System;
 using Avalonia;
-using DynamicData;
 
 namespace LatexEditor.Views;
 

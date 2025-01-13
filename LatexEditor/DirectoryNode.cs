@@ -15,18 +15,21 @@ namespace LatexEditor
         public ObservableCollection<DirectoryNode>? SubNodes { get; }
         public string Title { get; }
         public Uri? Path { get; }
+        public DirectoryNode? Parent { get; }
 
-        public DirectoryNode(string title, Uri? path = null)
+        public DirectoryNode(string title, Uri? path = null, DirectoryNode? parent = null)
         {
             Title = title;
             Path = path;
+            Parent = parent;
         }
 
-        public DirectoryNode(string title, ObservableCollection<DirectoryNode> subNodes, Uri? path = null)
+        public DirectoryNode(string title, ObservableCollection<DirectoryNode> subNodes, Uri? path = null, DirectoryNode? parent = null)
         {
             Title = title;
             SubNodes = subNodes;
             Path = path;
+            Parent = parent;
         }
 
         public async void OnExpandRequested()

@@ -16,6 +16,9 @@ using MsBox.Avalonia;
 using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using TextMateSharp.Grammars;
+using MsBox.Avalonia.Dto;
+using DialogHostAvalonia;
+using TextMateSharp.Model;
 
 namespace LatexEditor.ViewModels;
 
@@ -200,22 +203,22 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 if (item is IStorageFile fileItem)
                 {
-                    folderNode.SubNodes.Add(new DirectoryNode(fileItem.Name, fileItem.Path));
+                    folderNode.SubNodes.Add(new DirectoryNode(fileItem.Name, fileItem.Path, folderNode));
                 }
                 else if (item is IStorageFolder folderItem)
                 {
-                    var subDirNode = new DirectoryNode(folderItem.Name, new ObservableCollection<DirectoryNode>(), folderItem.Path);
+                    var subDirNode = new DirectoryNode(folderItem.Name, new ObservableCollection<DirectoryNode>(), folderItem.Path, folderNode);
 
                     var items2 = folderItem.GetItemsAsync();
                     await foreach (var item2 in items2)
                     {
                         if (item2 is IStorageFile fileItem2)
                         {
-                            subDirNode.SubNodes.Add(new DirectoryNode(fileItem2.Name, fileItem2.Path));
+                            subDirNode.SubNodes.Add(new DirectoryNode(fileItem2.Name, fileItem2.Path, subDirNode));
                         }
                         else if (item2 is IStorageFolder folderItem2)
                         {
-                            var subSubDirNode = new DirectoryNode(folderItem2.Name, new ObservableCollection<DirectoryNode>(), folderItem2.Path);
+                            var subSubDirNode = new DirectoryNode(folderItem2.Name, new ObservableCollection<DirectoryNode>(), folderItem2.Path, subDirNode);
                             subDirNode.SubNodes.Add(subSubDirNode);
                         }
                     }
@@ -290,6 +293,45 @@ public partial class MainWindowViewModel : ViewModelBase
         catch
         {
             throw;
+        }
+    }
+
+    [RelayCommand]
+    private async void NewFileDialog()
+    {
+        var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
+        var dialogViewModel = new EnterTextDialogViewModel()
+        {
+            TextBoxWatermark = "File name"
+        };
+        var dialog = new EnterTextDialog()
+        {
+            Width=300,
+            Height=64,
+            Title="Create new file",
+            DataContext=dialogViewModel
+        };
+        var filename = await dialog.ShowDialog<string>(window);
+
+        if (!string.IsNullOrEmpty(filename))
+        {
+            var selected = window.fileTreeView.SelectedItem as DirectoryNode;
+            DirectoryNode newNode = null;
+            if (selected?.SubNodes?.Count > 0)
+            {
+                var path = Path.Join(selected.Path.LocalPath, filename);
+                File.Create(path);
+                newNode = new DirectoryNode(filename, new Uri(path), selected);
+                selected.SubNodes.Add(newNode);
+            }
+
+            else if (selected?.SubNodes is null || selected?.SubNodes?.Count == 0)
+            {
+                var path = Path.Join(selected.Parent.Path.LocalPath, filename);
+                File.Create(path);
+                newNode = new DirectoryNode(filename, new Uri(path), selected.Parent);
+                selected.Parent.SubNodes.Add(newNode);
+            }
         }
     }
 

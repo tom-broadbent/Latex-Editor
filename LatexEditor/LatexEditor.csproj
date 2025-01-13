@@ -4308,4 +4308,10 @@
       <HintPath>..\..\..\..\Code\C#\AvaloniaPdfViewer\src\bin\Debug\net8.0\AvaloniaPdfViewer.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\EnterTextDialog.axaml.cs">
+      <DependentUpon>EnterTextDialog.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>
