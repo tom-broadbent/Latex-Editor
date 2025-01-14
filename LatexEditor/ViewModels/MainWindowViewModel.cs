@@ -511,7 +511,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         var folder = await provider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
         {
-            Title = "Open Directory",
+            Title = "Open Folder",
             AllowMultiple = false
         });
         return folder?.Count >= 1 ? folder[0] : null;
