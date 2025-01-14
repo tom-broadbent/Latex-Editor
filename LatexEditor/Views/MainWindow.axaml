@@ -38,7 +38,10 @@
         <MenuItem Header="Copy"/>
         <MenuItem Header="Paste"/>
       </MenuItem>
-      <MenuItem Command="{Binding CompileLatexCommand}" Header="_Compile" HotKey="F5"/>
+      <MenuItem Header="_LaTeX">
+        <MenuItem Command="{Binding CompileLatexCommand}" Header="_Compile" HotKey="F5"/>
+        <MenuItem Command="{Binding OpenSymbolPickerCommand}" Header="_Symbols"/>
+      </MenuItem>
     </Menu>
 
     <TreeView Name="fileTreeView" ItemsSource="{Binding FileTree}" Grid.Column="0" Grid.Row="1">
