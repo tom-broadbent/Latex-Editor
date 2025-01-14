@@ -19,6 +19,9 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Models;
+using System.Collections.Generic;
 
 namespace LatexEditor.ViewModels;
 
@@ -374,16 +377,22 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void FileTreeDelete()
+    private async void FileTreeDelete()
     {
         var selected = window.fileTreeView.SelectedItem as DirectoryNode;
 
         if (selected != null)
         {
+            var box = MessageBoxManager.GetMessageBoxStandard(
+                    "Confirm",
+                    $"Are you sure you want to delete {selected.Title}? This action cannot be undone.",
+                    ButtonEnum.YesNo);
+
             var path = selected.Path.LocalPath;
             if (selected.SubNodes is null)
             {
-                File.Delete(path);
+                var result = await box.ShowAsync();
+                if (result == ButtonResult.Yes) File.Delete(path);
             }
 
             else
@@ -405,8 +414,12 @@ public partial class MainWindowViewModel : ViewModelBase
 
                 if (dir.Exists)
                 {
-                    removeReadonly(dir);
-                    dir.Delete(true);
+                    var result = await box.ShowAsync();
+                    if (result == ButtonResult.Yes)
+                    {
+                        removeReadonly(dir);
+                        dir.Delete(true);
+                    }
                 }
             }
         }
