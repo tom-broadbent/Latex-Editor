@@ -14,8 +14,7 @@
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
 
         <Style Selector="TreeViewItem">
-          <Setter Property="(local:TreeViewItemInteraction.ListenToExpanded)" Value="True">
-          </Setter>
+          <Setter Property="(local:TreeViewItemInteraction.ListenToExpanded)" Value="True"/>
         </Style>
     </Application.Styles>
 </Application>

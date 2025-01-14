@@ -15,6 +15,10 @@ using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
 using System.Collections.ObjectModel;
 using TextMateSharp.Grammars;
+using System.Linq;
+using Avalonia.Controls;
+using Avalonia.LogicalTree;
+using Avalonia.Threading;
 
 namespace LatexEditor.ViewModels;
 
@@ -47,7 +51,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private ObservableCollection<DirectoryNode> fileTree = new ObservableCollection<DirectoryNode>();
 
     private FileSystemWatcher? watcher;
-    private MainWindow? window => ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
+    private static MainWindow? window => ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
     internal async Task OpenFile(IStorageFile file, CancellationToken token)
     {
         await using var readStream = await file.OpenReadAsync();
@@ -229,6 +233,18 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
+    private async Task FileTreeLoad(IStorageFolder folder)
+    {
+        var folderNode = await LoadFolder(folder);
+        FileTree = null;
+        FileTree = new ObservableCollection<DirectoryNode> { folderNode };  // using Clear() and Add() caused duplicates for some reason
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            var treeViewItem = window.fileTreeView.GetLogicalDescendants().OfType<TreeViewItem>().First();
+            treeViewItem.IsExpanded = true;
+        });
+    }
+
     [RelayCommand]
     private async Task OpenFolder(CancellationToken token)
     {
@@ -244,9 +260,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
             async void fileSystemEvent(object sender, FileSystemEventArgs e)
             {
-                var folderNode = await LoadFolder(folder);
-                FileTree = null;
-                FileTree = new ObservableCollection<DirectoryNode> { folderNode };  // using Clear() and Add() caused duplicates for some reason
+                await FileTreeLoad(folder);
             }
 
             watcher = new FileSystemWatcher(folder.Path.LocalPath);
@@ -268,9 +282,7 @@ public partial class MainWindowViewModel : ViewModelBase
             watcher.IncludeSubdirectories = true;
             watcher.EnableRaisingEvents = true;
 
-            var folderNode = await LoadFolder(folder);
-            FileTree.Clear();
-            FileTree.Add(folderNode);
+            await FileTreeLoad(folder);
         }
         catch(Exception e)
         {
