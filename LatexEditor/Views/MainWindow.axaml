@@ -45,6 +45,7 @@
       <TreeView.ContextMenu>
         <ContextMenu>
           <MenuItem Header="New File" Command="{Binding NewFileDialogCommand}"/>
+          <MenuItem Header="Delete" Command="{Binding FileTreeDeleteCommand}"/>
         </ContextMenu>
       </TreeView.ContextMenu>
       <TreeView.ItemTemplate>

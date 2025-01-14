@@ -14,11 +14,7 @@ using AvaloniaEdit.Document;
 using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
 using System.Collections.ObjectModel;
-using Avalonia.Controls;
 using TextMateSharp.Grammars;
-using MsBox.Avalonia.Dto;
-using DialogHostAvalonia;
-using TextMateSharp.Model;
 
 namespace LatexEditor.ViewModels;
 
@@ -50,6 +46,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private ObservableCollection<DirectoryNode> fileTree = new ObservableCollection<DirectoryNode>();
 
+    private FileSystemWatcher? watcher;
+    private MainWindow? window => ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
     internal async Task OpenFile(IStorageFile file, CancellationToken token)
     {
         await using var readStream = await file.OpenReadAsync();
@@ -58,7 +56,6 @@ public partial class MainWindowViewModel : ViewModelBase
         OriginalText = Text;
         OpenFileName = file.Name;
         openFilePath = file.TryGetLocalPath();
-        var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
         window.Title = Constants.ApplicationName + " - " + openFilePath;
         window.ChangesMade = false;
         PdfPath = Path.ChangeExtension(openFilePath, ".pdf");
@@ -85,7 +82,6 @@ public partial class MainWindowViewModel : ViewModelBase
            await SaveAsFile();
         }
 
-        var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
         if (window.ChangesMade)
         {
             await SaveFile();
@@ -165,7 +161,6 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         OpenFileName = null;
         openFilePath = null;
-        var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
         window.Title = Constants.ApplicationName;
         window.ChangesMade = false;
         Text = "";
@@ -242,6 +237,37 @@ public partial class MainWindowViewModel : ViewModelBase
             var folder = await DoOpenFolderPickerAsync();
             if (folder is null) return;
 
+            if (watcher != null)
+            {
+                watcher.Dispose();
+            }
+
+            async void fileSystemEvent(object sender, FileSystemEventArgs e)
+            {
+                var folderNode = await LoadFolder(folder);
+                FileTree = null;
+                FileTree = new ObservableCollection<DirectoryNode> { folderNode };  // using Clear() and Add() caused duplicates for some reason
+            }
+
+            watcher = new FileSystemWatcher(folder.Path.LocalPath);
+
+            watcher.NotifyFilter = NotifyFilters.Attributes
+                                 | NotifyFilters.CreationTime
+                                 | NotifyFilters.DirectoryName
+                                 | NotifyFilters.FileName
+                                 | NotifyFilters.LastAccess
+                                 | NotifyFilters.LastWrite
+                                 | NotifyFilters.Security
+                                 | NotifyFilters.Size;
+
+            watcher.Changed += fileSystemEvent;
+            watcher.Created += fileSystemEvent;
+            watcher.Deleted += fileSystemEvent;
+            watcher.Renamed += fileSystemEvent;
+
+            watcher.IncludeSubdirectories = true;
+            watcher.EnableRaisingEvents = true;
+
             var folderNode = await LoadFolder(folder);
             FileTree.Clear();
             FileTree.Add(folderNode);
@@ -267,7 +293,6 @@ public partial class MainWindowViewModel : ViewModelBase
             await stream.CopyToAsync(writeStream);
             OpenFileName = file.Name;
             openFilePath = file.TryGetLocalPath();
-            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
             window.Title = Constants.ApplicationName + " - " + openFilePath;
             window.ChangesMade = false;
             OriginalText = Text;
@@ -285,7 +310,6 @@ public partial class MainWindowViewModel : ViewModelBase
         try
         {
             File.WriteAllTextAsync(openFilePath.ToString(), Text);
-            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
             window.Title = Constants.ApplicationName + " - " + openFilePath;
             window.ChangesMade = false;
             OriginalText = Text;
@@ -299,7 +323,6 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async void NewFileDialog()
     {
-        var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
         var dialogViewModel = new EnterTextDialogViewModel()
         {
             TextBoxWatermark = "File name"
@@ -316,23 +339,67 @@ public partial class MainWindowViewModel : ViewModelBase
         if (!string.IsNullOrEmpty(filename))
         {
             var selected = window.fileTreeView.SelectedItem as DirectoryNode;
-            DirectoryNode newNode = null;
-            if (selected?.SubNodes?.Count > 0)
+            if (selected != null)
             {
-                var path = Path.Join(selected.Path.LocalPath, filename);
-                File.Create(path);
-                newNode = new DirectoryNode(filename, new Uri(path), selected);
-                selected.SubNodes.Add(newNode);
-            }
+                DirectoryNode newNode = null;
+                if (selected.SubNodes is null)
+                {
+                    var path = Path.Join(selected.Parent.Path.LocalPath, filename);
+                    File.Create(path).Close();
+                    newNode = new DirectoryNode(filename, new Uri(path), selected.Parent);
+                    selected.Parent.SubNodes.Add(newNode);
+                }
 
-            else if (selected?.SubNodes is null || selected?.SubNodes?.Count == 0)
-            {
-                var path = Path.Join(selected.Parent.Path.LocalPath, filename);
-                File.Create(path);
-                newNode = new DirectoryNode(filename, new Uri(path), selected.Parent);
-                selected.Parent.SubNodes.Add(newNode);
+                else
+                {
+                    var path = Path.Join(selected.Path.LocalPath, filename);
+                    File.Create(path).Close();
+                    newNode = new DirectoryNode(filename, new Uri(path), selected);
+                    selected.SubNodes.Add(newNode);
+                }
             }
         }
+    }
+
+    [RelayCommand]
+    private void FileTreeDelete()
+    {
+        var selected = window.fileTreeView.SelectedItem as DirectoryNode;
+
+        if (selected != null)
+        {
+            var path = selected.Path.LocalPath;
+            if (selected.SubNodes is null)
+            {
+                File.Delete(path);
+            }
+
+            else
+            {
+                var dir = new DirectoryInfo(path);
+
+                void removeReadonly(DirectoryInfo dir)
+                {
+                    dir.Attributes &= ~FileAttributes.ReadOnly;
+                    foreach (var subDir in dir.GetDirectories())
+                    {
+                        removeReadonly(subDir);
+                    }
+                    foreach (var file in dir.GetFiles())
+                    {
+                        file.Attributes &= ~FileAttributes.ReadOnly;
+                    }
+                }
+
+                if (dir.Exists)
+                {
+                    removeReadonly(dir);
+                    dir.Delete(true);
+                }
+            }
+        }
+
+        selected.Parent.SubNodes.Remove(selected);
     }
 
     private async Task<IStorageFile?> DoOpenFilePickerAsync()
