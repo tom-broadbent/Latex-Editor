@@ -243,8 +243,16 @@ public partial class MainWindowViewModel : ViewModelBase
         FileTree = new ObservableCollection<DirectoryNode> { folderNode };  // using Clear() and Add() caused duplicates for some reason
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
-            var treeViewItem = window.fileTreeView.GetLogicalDescendants().OfType<TreeViewItem>().First();
+            var descendants = window.fileTreeView.GetLogicalDescendants().OfType<TreeViewItem>();
+            var treeViewItem = descendants.First();
             treeViewItem.IsExpanded = true;
+
+            var treeViewContextMenu = new TreeViewContextMenuBuilder(this);
+            var contextMenu = treeViewContextMenu.ContextMenu;
+            foreach (var descendant in descendants)
+            {
+                descendant.ContextMenu = contextMenu;
+            }
         });
     }
 
