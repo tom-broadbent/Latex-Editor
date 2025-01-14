@@ -79,6 +79,12 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
+    private void UnloadFolder()
+    {
+        FileTree.Clear();
+        watcher.Dispose();
+    }
+
     [RelayCommand]
     private async Task CompileLatex()
     {
@@ -174,7 +180,7 @@ public partial class MainWindowViewModel : ViewModelBase
         OriginalText = Text;
         PdfPath = null;
         Document.Text = Text;
-        FileTree.Clear();
+        UnloadFolder();
     }
 
     [RelayCommand]
@@ -186,7 +192,7 @@ public partial class MainWindowViewModel : ViewModelBase
             if (file is null) return;
 
             await OpenFile(file, token);
-            FileTree.Clear();
+            UnloadFolder();
         }
         catch (Exception e)
         {
@@ -474,6 +480,13 @@ public partial class MainWindowViewModel : ViewModelBase
         }
 
         selected.Parent.SubNodes.Remove(selected);
+    }
+
+    [RelayCommand]
+    private async Task OpenSymbolPicker()
+    {
+        var symbolPicker = new SymbolPicker();
+        await symbolPicker.ShowDialog(window);
     }
 
     private async Task<IStorageFile?> DoOpenFilePickerAsync()
