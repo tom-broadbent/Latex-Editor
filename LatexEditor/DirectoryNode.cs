@@ -6,6 +6,7 @@ using LatexEditor.ViewModels;
 using LatexEditor.Views;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 
 namespace LatexEditor
@@ -13,7 +14,7 @@ namespace LatexEditor
     public class DirectoryNode
     {
         public ObservableCollection<DirectoryNode>? SubNodes { get; }
-        public string Title { get; }
+        public string Title { get; set; }
         public Uri? Path { get; }
         public DirectoryNode? Parent { get; }
 

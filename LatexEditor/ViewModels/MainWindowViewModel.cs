@@ -200,27 +200,27 @@ public partial class MainWindowViewModel : ViewModelBase
         try
         {
             var items = folder.GetItemsAsync();
-            var folderNode = new DirectoryNode(folder.Name, new ObservableCollection<DirectoryNode>(), folder.Path);
+            var folderNode = new DirectoryNode("📁 " + folder.Name, new ObservableCollection<DirectoryNode>(), folder.Path);
             await foreach (var item in items)
             {
                 if (item is IStorageFile fileItem)
                 {
-                    folderNode.SubNodes.Add(new DirectoryNode(fileItem.Name, fileItem.Path, folderNode));
+                    folderNode.SubNodes.Add(new DirectoryNode("📄 " + fileItem.Name, fileItem.Path, folderNode));
                 }
                 else if (item is IStorageFolder folderItem)
                 {
-                    var subDirNode = new DirectoryNode(folderItem.Name, new ObservableCollection<DirectoryNode>(), folderItem.Path, folderNode);
+                    var subDirNode = new DirectoryNode("📁 " + folderItem.Name, new ObservableCollection<DirectoryNode>(), folderItem.Path, folderNode);
 
                     var items2 = folderItem.GetItemsAsync();
                     await foreach (var item2 in items2)
                     {
                         if (item2 is IStorageFile fileItem2)
                         {
-                            subDirNode.SubNodes.Add(new DirectoryNode(fileItem2.Name, fileItem2.Path, subDirNode));
+                            subDirNode.SubNodes.Add(new DirectoryNode("📄 " + fileItem2.Name, fileItem2.Path, subDirNode));
                         }
                         else if (item2 is IStorageFolder folderItem2)
                         {
-                            var subSubDirNode = new DirectoryNode(folderItem2.Name, new ObservableCollection<DirectoryNode>(), folderItem2.Path, subDirNode);
+                            var subSubDirNode = new DirectoryNode("📁 " + folderItem2.Name, new ObservableCollection<DirectoryNode>(), folderItem2.Path, subDirNode);
                             subDirNode.SubNodes.Add(subSubDirNode);
                         }
                     }
@@ -336,7 +336,7 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async void NewFileDialog()
+    private async Task NewFileDialog()
     {
         var dialogViewModel = new EnterTextDialogViewModel()
         {
@@ -370,6 +370,47 @@ public partial class MainWindowViewModel : ViewModelBase
                     var path = Path.Join(selected.Path.LocalPath, filename);
                     File.Create(path).Close();
                     newNode = new DirectoryNode(filename, new Uri(path), selected);
+                    selected.SubNodes.Add(newNode);
+                }
+            }
+        }
+    }
+
+    [RelayCommand]
+    private async Task NewFolderDialog()
+    {
+        var dialogViewModel = new EnterTextDialogViewModel()
+        {
+            TextBoxWatermark = "Folder name"
+        };
+        var dialog = new EnterTextDialog()
+        {
+            Width = 300,
+            Height = 64,
+            Title = "Create new folder",
+            DataContext = dialogViewModel
+        };
+        var folderName = await dialog.ShowDialog<string>(window);
+
+        if (!string.IsNullOrEmpty(folderName))
+        {
+            var selected = window.fileTreeView.SelectedItem as DirectoryNode;
+            if (selected != null)
+            {
+                DirectoryNode newNode = null;
+                if (selected.SubNodes is null)
+                {
+                    var path = Path.Join(selected.Parent.Path.LocalPath, folderName);
+                    Directory.CreateDirectory(path);
+                    newNode = new DirectoryNode(folderName, new Uri(path), selected.Parent);
+                    selected.Parent.SubNodes.Add(newNode);
+                }
+
+                else
+                {
+                    var path = Path.Join(selected.Path.LocalPath, folderName);
+                    Directory.CreateDirectory(path);
+                    newNode = new DirectoryNode(folderName, new Uri(path), selected);
                     selected.SubNodes.Add(newNode);
                 }
             }
