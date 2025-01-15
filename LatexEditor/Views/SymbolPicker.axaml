@@ -9,5 +9,7 @@
         x:DataType="vm:SymbolPickerViewModel"
         Title="Symbol Picker">
 
-  <Grid x:Name="RootGrid"/>
+  <ScrollViewer>
+    <Grid x:Name="RootGrid"/>
+  </ScrollViewer>
 </Window>

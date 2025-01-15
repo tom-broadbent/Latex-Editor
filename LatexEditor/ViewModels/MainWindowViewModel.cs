@@ -55,6 +55,8 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private FileSystemWatcher? watcher;
     private static MainWindow? window => ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
+    private SymbolPickerViewModel symbolPickerViewModel = new SymbolPickerViewModel();
+
     internal async Task OpenFile(IStorageFile file, CancellationToken token)
     {
         await using var readStream = await file.OpenReadAsync();
@@ -488,7 +490,6 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task PickSymbol()
     {
-        var symbolPickerViewModel = new SymbolPickerViewModel();
         var symbolPicker = new SymbolPicker(symbolPickerViewModel);
         var symbol = await symbolPicker.ShowDialog<string>(window);
         if (symbol != null)
