@@ -489,10 +489,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private async Task OpenSymbolPicker()
     {
         var symbolPickerViewModel = new SymbolPickerViewModel();
-        var symbolPicker = new SymbolPicker()
-        {
-            DataContext = symbolPickerViewModel
-        };
+        var symbolPicker = new SymbolPicker(symbolPickerViewModel);
         await symbolPicker.ShowDialog(window);
     }
 
