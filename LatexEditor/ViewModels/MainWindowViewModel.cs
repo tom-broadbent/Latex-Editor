@@ -82,7 +82,10 @@ public partial class MainWindowViewModel : ViewModelBase
     private void UnloadFolder()
     {
         FileTree.Clear();
-        watcher.Dispose();
+        if (watcher != null)
+        {
+            watcher.Dispose();
+        }
     }
 
     [RelayCommand]
@@ -485,7 +488,11 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task OpenSymbolPicker()
     {
-        var symbolPicker = new SymbolPicker();
+        var symbolPickerViewModel = new SymbolPickerViewModel();
+        var symbolPicker = new SymbolPicker()
+        {
+            DataContext = symbolPickerViewModel
+        };
         await symbolPicker.ShowDialog(window);
     }
 
