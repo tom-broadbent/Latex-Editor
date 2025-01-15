@@ -36,7 +36,7 @@ public partial class MainWindow : Window
     {
     }
 
-    private void OnTextEntered(object? sender, Avalonia.Input.KeyEventArgs e)
+    public void SetChangeMarker()
     {
         var viewModel = DataContext as MainWindowViewModel;
         viewModel.Text = viewModel.Document.Text;
@@ -45,7 +45,13 @@ public partial class MainWindow : Window
             ChangesMade = true;
             this.Title += " *";
         }
+    }
 
+    private void OnTextEntered(object? sender, Avalonia.Input.KeyEventArgs e)
+    {
+        SetChangeMarker();
+
+        var viewModel = DataContext as MainWindowViewModel;
         if (!string.IsNullOrWhiteSpace(e.KeySymbol) && viewModel.Text.Length > 0)
         {
             ShowCompletion();

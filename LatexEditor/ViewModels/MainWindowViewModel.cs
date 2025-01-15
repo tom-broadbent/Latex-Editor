@@ -486,11 +486,18 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task OpenSymbolPicker()
+    private async Task PickSymbol()
     {
         var symbolPickerViewModel = new SymbolPickerViewModel();
         var symbolPicker = new SymbolPicker(symbolPickerViewModel);
-        await symbolPicker.ShowDialog(window);
+        var symbol = await symbolPicker.ShowDialog<string>(window);
+        if (symbol != null)
+        {
+            var doc = window.textEditor.Document;
+            var offset = window.textEditor.CaretOffset;
+            doc.Insert(offset, symbol);
+            window.SetChangeMarker();
+        }
     }
 
     private async Task<IStorageFile?> DoOpenFilePickerAsync()

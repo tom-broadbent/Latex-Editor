@@ -1,8 +1,7 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using LatexEditor.ViewModels;
 using AvaloniaMath.Controls;
+using System;
 
 namespace LatexEditor.Views;
 
@@ -26,9 +25,18 @@ internal partial class SymbolPicker : Window
                     },
                     [Grid.RowProperty] = i++
                 };
+                button.Click += SymbolClick;
                 RootGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
                 RootGrid.Children.Add(button);
             }
+        }
+    }
+
+    private void SymbolClick(Object sender, EventArgs e)
+    {
+        if (sender is Button button && button.Content is FormulaBlock fb)
+        {
+            Close(fb.Formula);
         }
     }
 }
