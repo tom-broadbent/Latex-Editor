@@ -12,6 +12,7 @@ internal partial class SymbolPicker : Window
 {
     internal SymbolPicker(SymbolPickerViewModel vm)
     {
+        Closing += OnClose;
         DataContext = vm;
         Width = 537;
         Height = 600;
@@ -28,12 +29,16 @@ internal partial class SymbolPicker : Window
         }
     }
 
-    private void SymbolClick(Object sender, EventArgs e)
+    private void SymbolClick(object? sender, EventArgs e)
     {
         if (sender is Button button && button.Content is FormulaBlock fb)
         {
-            RootGrid.Children.Clear();
             Close(fb.Formula);
         }
+    }
+
+    private void OnClose(object? sender, EventArgs e)
+    {
+        RootGrid.Children.Clear();
     }
 }

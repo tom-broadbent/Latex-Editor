@@ -280,7 +280,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 watcher.Dispose();
             }
 
-            async void fileSystemEvent(object sender, FileSystemEventArgs e)
+            async void fileSystemEvent(object? sender, FileSystemEventArgs e)
             {
                 await FileTreeLoad(folder);
             }

@@ -13,12 +13,12 @@ public partial class EnterTextDialog : Window
         OkButton.Click += OkButton_Click;
     }
 
-    private void CancelButton_Click(object sender, EventArgs e)
+    private void CancelButton_Click(object? sender, EventArgs e)
     {
         Close();
     }
 
-    private void OkButton_Click(Object sender, EventArgs e)
+    private void OkButton_Click(object? sender, EventArgs e)
     {
         Close(TextEntry.Text);
     }
