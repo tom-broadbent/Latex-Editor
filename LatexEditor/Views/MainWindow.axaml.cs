@@ -28,6 +28,7 @@ public partial class MainWindow : Window
         TextMate.SetGrammar(registryOptions.GetScopeByLanguageId(registryOptions.GetLanguageByExtension(".tex").Id));
         textEditor.KeyUp += OnTextEntered;
         fileTreeView.DoubleTapped += OnSelectTreeNode;
+        menuExit.Click += (sender, e) => Close();
 
         LatexCompletionDataLoader.LoadFromDirectory("Completion");
     }

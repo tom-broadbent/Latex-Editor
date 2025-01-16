@@ -32,7 +32,7 @@
         <MenuItem Command="{Binding SaveFileCommand}" Header="_Save" HotKey="Ctrl+S"/>
         <MenuItem Command="{Binding SaveAsFileCommand}" Header="_Save As" HotKey="Ctrl+Shift+S"/>
         <Separator/>
-        <MenuItem Header="_Exit"/>
+        <MenuItem Header="_Exit" x:Name="menuExit"/>
       </MenuItem>
       <MenuItem Header="_Edit">
         <MenuItem Header="Copy"/>
