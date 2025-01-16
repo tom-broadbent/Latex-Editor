@@ -4,10 +4,9 @@
 \Im
 \nabla
 \exists
+\not\exists
 \partial
-\nexists
 \emptyset
-\varnothing
 \wp
 \complement
 \neg

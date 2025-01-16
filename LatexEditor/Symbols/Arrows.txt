@@ -10,8 +10,6 @@
 \Downarrow
 \Leftrightarrow
 \Updownarrow
-\mapsto
-\longmapsto
 \nearrow
 \searrow
 \swarrow
