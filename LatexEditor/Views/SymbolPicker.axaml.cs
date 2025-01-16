@@ -3,6 +3,8 @@ using Avalonia.Layout;
 using LatexEditor.ViewModels;
 using AvaloniaMath.Controls;
 using System;
+using Avalonia.LogicalTree;
+using System.Linq;
 
 namespace LatexEditor.Views;
 
@@ -11,26 +13,18 @@ internal partial class SymbolPicker : Window
     internal SymbolPicker(SymbolPickerViewModel vm)
     {
         DataContext = vm;
-        Width = 510;
+        Width = 537;
         Height = 600;
         InitializeComponent();
 
-        for (var c = 0; c < vm.MaxColumns; c++)
-        {
-            RootGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
-        }
-
-
-        var rowCount = (vm.Symbols.Count + vm.MaxColumns - 1) / vm.MaxColumns;
-        for (var r = 0; r < rowCount; r++)
+        foreach (var expander in vm.Expanders)
         {
             RootGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-        }
-
-        foreach (var button in vm.Buttons)
-        {
-            button.Click += SymbolClick;
-            RootGrid.Children.Add(button);
+            foreach (var button in expander.GetLogicalDescendants().OfType<Button>())
+            {
+                button.Click += SymbolClick;
+            }
+            RootGrid.Children.Add(expander);
         }
     }
 
