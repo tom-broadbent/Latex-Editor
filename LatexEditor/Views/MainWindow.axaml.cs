@@ -153,7 +153,7 @@ public partial class MainWindow : Window
                     "You have unsaved changes in the editor. Are you sure you want to close? Unsaved changes will be lost.",
                     ButtonEnum.YesNo
                 );
-            var result = await confirm.ShowAsync();
+            var result = await confirm.ShowWindowDialogAsync(this);
             if (result == ButtonResult.Yes)
             {
                 Closing -= OnClose;

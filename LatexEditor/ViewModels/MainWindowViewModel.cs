@@ -184,7 +184,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 "You have unsaved changes in the editor. Are you sure you want to create a new document? Unsaved changes will be lost.",
                 ButtonEnum.YesNo
             );
-            var result = await confirm.ShowAsync();
+            var result = await confirm.ShowWindowDialogAsync(window);
             if (result == ButtonResult.No) return;
         }
         OpenFileName = null;
@@ -209,7 +209,7 @@ public partial class MainWindowViewModel : ViewModelBase
                     "You have unsaved changes in the editor. Are you sure you want to open a different file? Unsaved changes will be lost.",
                     ButtonEnum.YesNo
                 );
-                var result = await confirm.ShowAsync();
+                var result = await confirm.ShowWindowDialogAsync(window);
                 if (result == ButtonResult.No) return;
             }
             var file = await DoOpenFilePickerAsync();
@@ -298,7 +298,7 @@ public partial class MainWindowViewModel : ViewModelBase
                     "You have unsaved changes in the editor. Are you sure you want to open a folder? Unsaved changes will be lost.",
                     ButtonEnum.YesNo
                 );
-                var result = await confirm.ShowAsync();
+                var result = await confirm.ShowWindowDialogAsync(window);
                 if (result == ButtonResult.No) return;
             }
 
