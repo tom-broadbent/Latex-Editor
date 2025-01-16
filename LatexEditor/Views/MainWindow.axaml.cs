@@ -8,6 +8,9 @@ using System.Threading;
 using TextMateSharp.Grammars;
 using System;
 using Avalonia;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia;
+using System.Threading.Tasks;
 
 namespace LatexEditor.Views;
 
@@ -29,6 +32,7 @@ public partial class MainWindow : Window
         textEditor.KeyUp += OnTextEntered;
         fileTreeView.DoubleTapped += OnSelectTreeNode;
         menuExit.Click += (sender, e) => Close();
+        Closing += OnClose;
 
         LatexCompletionDataLoader.LoadFromDirectory("Completion");
     }
@@ -69,6 +73,16 @@ public partial class MainWindow : Window
 
     private async void OnSelectTreeNode(object? sender, Avalonia.Input.TappedEventArgs e)
     {
+        if (ChangesMade)
+        {
+            var confirm = MessageBoxManager.GetMessageBoxStandard(
+                "Confirm",
+                "You have unsaved changes in the editor. Are you sure you want to open a different file? Unsaved changes will be lost.",
+                ButtonEnum.YesNo
+            );
+            var result = await confirm.ShowAsync();
+            if (result == ButtonResult.No) return;
+        }
         var viewModel = DataContext as MainWindowViewModel;
         var item = fileTreeView.SelectedItem as DirectoryNode;
         if (item != null && item.Path != null)
@@ -127,5 +141,24 @@ public partial class MainWindow : Window
         });
 
         insightWindow.Show();
+    }
+
+    private async void OnClose(object? sender, WindowClosingEventArgs e)
+    {
+        if (ChangesMade)
+        {
+            e.Cancel = true;
+            var confirm = MessageBoxManager.GetMessageBoxStandard(
+                    "Confirm",
+                    "You have unsaved changes in the editor. Are you sure you want to close? Unsaved changes will be lost.",
+                    ButtonEnum.YesNo
+                );
+            var result = await confirm.ShowAsync();
+            if (result == ButtonResult.Yes)
+            {
+                Closing -= OnClose;
+                Close();
+            }
+        }
     }
 }

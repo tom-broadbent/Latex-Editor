@@ -175,8 +175,18 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void NewFile()
+    private async Task NewFile()
     {
+        if (window.ChangesMade == true)
+        {
+            var confirm = MessageBoxManager.GetMessageBoxStandard(
+                "Confirm",
+                "You have unsaved changes in the editor. Are you sure you want to create a new document? Unsaved changes will be lost.",
+                ButtonEnum.YesNo
+            );
+            var result = await confirm.ShowAsync();
+            if (result == ButtonResult.No) return;
+        }
         OpenFileName = null;
         openFilePath = null;
         window.Title = Constants.ApplicationName;
@@ -185,7 +195,6 @@ public partial class MainWindowViewModel : ViewModelBase
         OriginalText = Text;
         PdfPath = null;
         Document.Text = Text;
-        UnloadFolder();
     }
 
     [RelayCommand]
@@ -193,6 +202,16 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         try
         {
+            if (window.ChangesMade)
+            {
+                var confirm = MessageBoxManager.GetMessageBoxStandard(
+                    "Confirm",
+                    "You have unsaved changes in the editor. Are you sure you want to open a different file? Unsaved changes will be lost.",
+                    ButtonEnum.YesNo
+                );
+                var result = await confirm.ShowAsync();
+                if (result == ButtonResult.No) return;
+            }
             var file = await DoOpenFilePickerAsync();
             if (file is null) return;
 
@@ -272,6 +291,17 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         try
         {
+            if (window.ChangesMade)
+            {
+                var confirm = MessageBoxManager.GetMessageBoxStandard(
+                    "Confirm",
+                    "You have unsaved changes in the editor. Are you sure you want to open a folder? Unsaved changes will be lost.",
+                    ButtonEnum.YesNo
+                );
+                var result = await confirm.ShowAsync();
+                if (result == ButtonResult.No) return;
+            }
+
             var folder = await DoOpenFolderPickerAsync();
             if (folder is null) return;
 
