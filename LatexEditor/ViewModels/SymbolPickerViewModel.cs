@@ -54,6 +54,7 @@ namespace LatexEditor.ViewModels
                 var expander = new Expander()
                 {
                     VerticalAlignment = VerticalAlignment.Top,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
                     Content = buttonGrid,
                     Header = Path.GetFileNameWithoutExtension(filename),
                     [Grid.RowProperty] = expanderRow
