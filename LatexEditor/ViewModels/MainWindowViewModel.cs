@@ -41,13 +41,13 @@ public partial class MainWindowViewModel : ViewModelBase
     private string? openFilePath;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(CompileLatexCommand), nameof(SelectFileCommand), nameof(NewFileCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CompileLatexCommand), nameof(SelectFileCommand), nameof(NewProjectCommand))]
     private string? pdfPath;
 
     public string OriginalText { get; set; } = "";
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SelectFileCommand), nameof(NewFileCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SelectFileCommand), nameof(NewProjectCommand))]
     private TextDocument document = new TextDocument();
 
     [ObservableProperty]
@@ -174,27 +174,43 @@ public partial class MainWindowViewModel : ViewModelBase
         PdfPath = Path.ChangeExtension(openFilePath, ".pdf");
     }
 
+    private void SetNewFileText(string text = "")
+    {
+        OpenFileName = null;
+        openFilePath = null;
+        window.Title = Constants.ApplicationName;
+        window.ChangesMade = false;
+        Text = text;
+        OriginalText = Text;
+        PdfPath = null;
+        Document.Text = Text;
+    }
+
     [RelayCommand]
-    private async Task NewFile()
+    private async Task NewProject()
     {
         if (window.ChangesMade == true)
         {
             var confirm = MessageBoxManager.GetMessageBoxStandard(
                 "Confirm",
-                "You have unsaved changes in the editor. Are you sure you want to create a new document? Unsaved changes will be lost.",
+                "You have unsaved changes in the editor. Are you sure you want to create a new project? Unsaved changes will be lost.",
                 ButtonEnum.YesNo
             );
             var result = await confirm.ShowWindowDialogAsync(window);
             if (result == ButtonResult.No) return;
         }
-        OpenFileName = null;
-        openFilePath = null;
-        window.Title = Constants.ApplicationName;
-        window.ChangesMade = false;
-        Text = "";
-        OriginalText = Text;
-        PdfPath = null;
-        Document.Text = Text;
+
+        var newProjectMenu = new ProjectCreator()
+        {
+            Width = 400,
+            Height = 225
+        };
+        //(var newFileText, var newProjectPath) = await newProjectMenu.ShowDialog<(string, string)>(window);
+        //if (newFileText != null && newProjectPath != null)
+        //{
+        //    SetNewFileText(newFileText);
+        //}
+        await newProjectMenu.ShowDialog(window);
     }
 
     [RelayCommand]
@@ -286,8 +302,44 @@ public partial class MainWindowViewModel : ViewModelBase
         });
     }
 
+    private async Task OpenFolder(IStorageFolder folder)
+    {
+        if (folder is null) return;
+
+        if (watcher != null)
+        {
+            watcher.Dispose();
+        }
+
+        async void fileSystemEvent(object? sender, FileSystemEventArgs e)
+        {
+            await FileTreeLoad(folder);
+        }
+
+        watcher = new FileSystemWatcher(folder.Path.LocalPath);
+
+        watcher.NotifyFilter = NotifyFilters.Attributes
+                             | NotifyFilters.CreationTime
+                             | NotifyFilters.DirectoryName
+                             | NotifyFilters.FileName
+                             | NotifyFilters.LastAccess
+                             | NotifyFilters.LastWrite
+                             | NotifyFilters.Security
+                             | NotifyFilters.Size;
+
+        watcher.Changed += fileSystemEvent;
+        watcher.Created += fileSystemEvent;
+        watcher.Deleted += fileSystemEvent;
+        watcher.Renamed += fileSystemEvent;
+
+        watcher.IncludeSubdirectories = true;
+        watcher.EnableRaisingEvents = true;
+
+        await FileTreeLoad(folder);
+    }
+
     [RelayCommand]
-    private async Task OpenFolder(CancellationToken token)
+    private async Task PickFolder(CancellationToken token)
     {
         try
         {
@@ -303,38 +355,7 @@ public partial class MainWindowViewModel : ViewModelBase
             }
 
             var folder = await DoOpenFolderPickerAsync();
-            if (folder is null) return;
-
-            if (watcher != null)
-            {
-                watcher.Dispose();
-            }
-
-            async void fileSystemEvent(object? sender, FileSystemEventArgs e)
-            {
-                await FileTreeLoad(folder);
-            }
-
-            watcher = new FileSystemWatcher(folder.Path.LocalPath);
-
-            watcher.NotifyFilter = NotifyFilters.Attributes
-                                 | NotifyFilters.CreationTime
-                                 | NotifyFilters.DirectoryName
-                                 | NotifyFilters.FileName
-                                 | NotifyFilters.LastAccess
-                                 | NotifyFilters.LastWrite
-                                 | NotifyFilters.Security
-                                 | NotifyFilters.Size;
-
-            watcher.Changed += fileSystemEvent;
-            watcher.Created += fileSystemEvent;
-            watcher.Deleted += fileSystemEvent;
-            watcher.Renamed += fileSystemEvent;
-
-            watcher.IncludeSubdirectories = true;
-            watcher.EnableRaisingEvents = true;
-
-            await FileTreeLoad(folder);
+            await OpenFolder(folder);
         }
         catch(Exception e)
         {
@@ -378,9 +399,10 @@ public partial class MainWindowViewModel : ViewModelBase
             window.ChangesMade = false;
             OriginalText = Text;
         }
-        catch
+        catch (Exception e)
         {
-            throw;
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+            box.ShowAsync();
         }
     }
 
@@ -428,106 +450,188 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task NewFolderDialog()
     {
-        var dialogViewModel = new EnterTextDialogViewModel()
+        try
         {
-            TextBoxWatermark = "Folder name"
-        };
-        var dialog = new EnterTextDialog()
-        {
-            Width = 300,
-            Height = 64,
-            Title = "Create new folder",
-            DataContext = dialogViewModel
-        };
-        var folderName = await dialog.ShowDialog<string>(window);
-
-        if (!string.IsNullOrEmpty(folderName))
-        {
-            var selected = window.fileTreeView.SelectedItem as DirectoryNode;
-            if (selected != null)
+            var dialogViewModel = new EnterTextDialogViewModel()
             {
-                DirectoryNode newNode = null;
-                if (selected.SubNodes is null)
-                {
-                    var path = Path.Join(selected.Parent.Path.LocalPath, folderName);
-                    Directory.CreateDirectory(path);
-                    newNode = new DirectoryNode(folderName, new Uri(path), selected.Parent);
-                    selected.Parent.SubNodes.Add(newNode);
-                }
+                TextBoxWatermark = "Folder name"
+            };
+            var dialog = new EnterTextDialog()
+            {
+                Width = 300,
+                Height = 64,
+                Title = "Create new folder",
+                DataContext = dialogViewModel
+            };
+            var folderName = await dialog.ShowDialog<string>(window);
 
-                else
+            if (!string.IsNullOrEmpty(folderName))
+            {
+                var selected = window.fileTreeView.SelectedItem as DirectoryNode;
+                if (selected != null)
                 {
-                    var path = Path.Join(selected.Path.LocalPath, folderName);
-                    Directory.CreateDirectory(path);
-                    newNode = new DirectoryNode(folderName, new Uri(path), selected);
-                    selected.SubNodes.Add(newNode);
+                    DirectoryNode newNode = null;
+                    if (selected.SubNodes is null)
+                    {
+                        var path = Path.Join(selected.Parent.Path.LocalPath, folderName);
+                        Directory.CreateDirectory(path);
+                        newNode = new DirectoryNode(folderName, new Uri(path), selected.Parent);
+                        selected.Parent.SubNodes.Add(newNode);
+                    }
+
+                    else
+                    {
+                        var path = Path.Join(selected.Path.LocalPath, folderName);
+                        Directory.CreateDirectory(path);
+                        newNode = new DirectoryNode(folderName, new Uri(path), selected);
+                        selected.SubNodes.Add(newNode);
+                    }
                 }
             }
+        }
+        catch (Exception e)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+            box.ShowAsync();
         }
     }
 
     [RelayCommand]
     private async void FileTreeDelete()
     {
-        var selected = window.fileTreeView.SelectedItem as DirectoryNode;
-
-        if (selected != null)
+        try
         {
-            var box = MessageBoxManager.GetMessageBoxStandard(
-                    "Confirm",
-                    $"Are you sure you want to delete {selected.Title}? This action cannot be undone.",
-                    ButtonEnum.YesNo);
+            var selected = window.fileTreeView.SelectedItem as DirectoryNode;
 
-            var path = selected.Path.LocalPath;
-            if (selected.SubNodes is null)
+            if (selected != null)
             {
-                var result = await box.ShowAsync();
-                if (result == ButtonResult.Yes) File.Delete(path);
-            }
+                var box = MessageBoxManager.GetMessageBoxStandard(
+                        "Confirm",
+                        $"Are you sure you want to delete {selected.Title}? This action cannot be undone.",
+                        ButtonEnum.YesNo);
 
-            else
-            {
-                var dir = new DirectoryInfo(path);
-
-                void removeReadonly(DirectoryInfo dir)
-                {
-                    dir.Attributes &= ~FileAttributes.ReadOnly;
-                    foreach (var subDir in dir.GetDirectories())
-                    {
-                        removeReadonly(subDir);
-                    }
-                    foreach (var file in dir.GetFiles())
-                    {
-                        file.Attributes &= ~FileAttributes.ReadOnly;
-                    }
-                }
-
-                if (dir.Exists)
+                var path = selected.Path.LocalPath;
+                if (selected.SubNodes is null)
                 {
                     var result = await box.ShowAsync();
-                    if (result == ButtonResult.Yes)
+                    if (result == ButtonResult.Yes) File.Delete(path);
+                }
+
+                else
+                {
+                    var dir = new DirectoryInfo(path);
+
+                    void removeReadonly(DirectoryInfo dir)
                     {
-                        removeReadonly(dir);
-                        dir.Delete(true);
+                        dir.Attributes &= ~FileAttributes.ReadOnly;
+                        foreach (var subDir in dir.GetDirectories())
+                        {
+                            removeReadonly(subDir);
+                        }
+                        foreach (var file in dir.GetFiles())
+                        {
+                            file.Attributes &= ~FileAttributes.ReadOnly;
+                        }
+                    }
+
+                    if (dir.Exists)
+                    {
+                        var result = await box.ShowAsync();
+                        if (result == ButtonResult.Yes)
+                        {
+                            removeReadonly(dir);
+                            dir.Delete(true);
+                        }
+                    }
+                }
+            }
+
+            selected.Parent.SubNodes.Remove(selected);
+        }
+        catch (Exception e)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+            box.ShowAsync();
+        }
+    }
+
+    [RelayCommand]
+    private async void FileTreeRename()
+    {
+        try
+        {
+            var selected = window.fileTreeView.SelectedItem as DirectoryNode;
+
+            if (selected != null)
+            {
+                var dialogViewModel = new EnterTextDialogViewModel()
+                {
+                    TextBoxWatermark = "New name",
+                    TextBoxDefaultText = Path.GetFileName(selected.Path.LocalPath)
+                };
+                var renameDialog = new EnterTextDialog()
+                {
+                    Width = 300,
+                    Height = 64,
+                    Title = "Rename",
+                    DataContext = dialogViewModel
+                };
+
+                var result = await renameDialog.ShowDialog<string>(window);
+                if (result != null)
+                {
+                    var path = selected.Path.LocalPath;
+                    if (selected.SubNodes == null)
+                    {
+                        File.Move(path, Path.Join(Path.GetDirectoryName(path), result));
+                    }
+                    else
+                    {
+                        var newPath = Path.Join(Path.GetDirectoryName(path), result);
+                        Directory.Move(path, newPath);
+
+                        if (selected.Parent == null) // re-open the directory if it is the open one
+                        {
+                            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
+                        desktop.MainWindow?.StorageProvider is not { } provider)
+                                throw new NullReferenceException("Missing StorageProvider instance.");
+
+                            var folder = await provider.TryGetFolderFromPathAsync(newPath);
+                            if (folder != null)
+                            {
+                                await OpenFolder(folder);
+                            }
+                        }
                     }
                 }
             }
         }
-
-        selected.Parent.SubNodes.Remove(selected);
+        catch (Exception e)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+            box.ShowAsync();
+        }
     }
 
     [RelayCommand]
     private async Task PickSymbol()
     {
-        var symbolPicker = new SymbolPicker(symbolPickerViewModel);
-        var symbol = await symbolPicker.ShowDialog<string>(window);
-        if (symbol != null)
+        try
         {
-            var doc = window.textEditor.Document;
-            var offset = window.textEditor.CaretOffset;
-            doc.Insert(offset, symbol);
-            window.SetChangeMarker();
+            var symbolPicker = new SymbolPicker(symbolPickerViewModel);
+            var symbol = await symbolPicker.ShowDialog<string>(window);
+            if (symbol != null)
+            {
+                var doc = window.textEditor.Document;
+                var offset = window.textEditor.CaretOffset;
+                doc.Insert(offset, symbol);
+                window.SetChangeMarker();
+            }
+        }
+        catch (Exception e)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+            box.ShowAsync();
         }
     }
 

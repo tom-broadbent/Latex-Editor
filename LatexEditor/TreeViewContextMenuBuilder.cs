@@ -26,6 +26,11 @@ namespace LatexEditor
                     },
                     new MenuItem()
                     {
+                        Header = "Rename",
+                        Command = _viewModel.FileTreeRenameCommand
+                    },
+                    new MenuItem()
+                    {
                         Header = "Delete",
                         Command = _viewModel.FileTreeDeleteCommand
                     }

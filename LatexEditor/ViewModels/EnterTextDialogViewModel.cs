@@ -7,5 +7,8 @@ namespace LatexEditor.ViewModels
     {
         [ObservableProperty]
         private string textBoxWatermark = "";
+
+        [ObservableProperty]
+        private string textBoxDefaultText = "";
     }
 }

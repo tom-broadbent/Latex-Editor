@@ -9,7 +9,7 @@
 
   <Grid RowDefinitions="Auto, Auto"
         ColumnDefinitions="*, *">
-    <TextBox x:Name="TextEntry" Grid.Row="0" Grid.ColumnSpan="2" Watermark="{Binding TextBoxWatermark}"/>
+    <TextBox x:Name="TextEntry" Grid.Row="0" Grid.ColumnSpan="2" Watermark="{Binding TextBoxWatermark}" Text="{Binding TextBoxDefaultText}"/>
     <Button x:Name="OkButton" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" Width="64" HorizontalContentAlignment="Center" HotKey="Enter">Ok</Button>
     <Button x:Name="CancelButton" Grid.Row="1" Grid.Column="1" Width="64" HorizontalContentAlignment="Center" HotKey="Escape">Cancel</Button>
   </Grid>
