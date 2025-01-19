@@ -19,9 +19,6 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
-using System.Collections.Generic;
 
 namespace LatexEditor.ViewModels;
 
@@ -228,7 +225,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 var result = await confirm.ShowWindowDialogAsync(window);
                 if (result == ButtonResult.No) return;
             }
-            var file = await DoOpenFilePickerAsync();
+            var file = await FsUtils.DoOpenFilePickerAsync();
             if (file is null) return;
 
             await OpenFile(file, token);
@@ -354,7 +351,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 if (result == ButtonResult.No) return;
             }
 
-            var folder = await DoOpenFolderPickerAsync();
+            var folder = await FsUtils.DoOpenFolderPickerAsync();
             await OpenFolder(folder);
         }
         catch(Exception e)
@@ -370,7 +367,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            var file = await DoSaveFilePickerAsync();
+            var file = await FsUtils.DoSaveFilePickerAsync();
             if (file is null) return;
 
             var stream = new MemoryStream(Encoding.Default.GetBytes(Text));
@@ -633,46 +630,6 @@ public partial class MainWindowViewModel : ViewModelBase
             var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
             box.ShowAsync();
         }
-    }
-
-    private async Task<IStorageFile?> DoOpenFilePickerAsync()
-    {
-        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
-            desktop.MainWindow?.StorageProvider is not { } provider)
-            throw new NullReferenceException("Missing StorageProvider instance.");
-
-        var files = await provider.OpenFilePickerAsync(new FilePickerOpenOptions()
-        {
-            Title = "Open Text File",
-            AllowMultiple = false
-        });
-        return files?.Count >= 1 ? files[0] : null;
-    }
-
-    private async Task<IStorageFolder?> DoOpenFolderPickerAsync()
-    {
-        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
-            desktop.MainWindow?.StorageProvider is not { } provider)
-            throw new NullReferenceException("Missing StorageProvider instance.");
-
-        var folder = await provider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
-        {
-            Title = "Open Folder",
-            AllowMultiple = false
-        });
-        return folder?.Count >= 1 ? folder[0] : null;
-    }
-
-    private async Task<IStorageFile?> DoSaveFilePickerAsync()
-    {
-        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
-            desktop.MainWindow?.StorageProvider is not { } provider)
-            throw new NullReferenceException("Missing StorageProvider instance.");
-
-        return await provider.SaveFilePickerAsync(new FilePickerSaveOptions()
-        {
-            Title = "Save As"
-        });
     }
 #pragma warning restore CA1822 // Mark members as static
 }
