@@ -13,5 +13,12 @@ public partial class ProjectCreator : Window
     {
         InitializeComponent();
         DataContext = new ProjectCreatorViewModel();
+        fromTemplate.Click += (s, e) => OpenTemplateSelector();
+    }
+
+    private async void OpenTemplateSelector()
+    {
+        var templateSelector = new TemplateSelector();
+        await templateSelector.ShowDialog(this);
     }
 }
