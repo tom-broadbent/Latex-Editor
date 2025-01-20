@@ -9,16 +9,20 @@ namespace LatexEditor.Views;
 
 public partial class ProjectCreator : Window
 {
-    public ProjectCreator()
-    {
-        InitializeComponent();
-        DataContext = new ProjectCreatorViewModel();
-        fromTemplate.Click += (s, e) => OpenTemplateSelector();
-    }
+	public ProjectCreator()
+	{
+		InitializeComponent();
+		DataContext = new ProjectCreatorViewModel();
+		fromTemplate.Click += (s, e) => OpenTemplateSelector();
+	}
 
-    private async void OpenTemplateSelector()
-    {
-        var templateSelector = new TemplateSelector();
-        await templateSelector.ShowDialog(this);
-    }
+	private async void OpenTemplateSelector()
+	{
+		var templateSelector = new TemplateSelector();
+		var newProjectDir = await templateSelector.ShowDialog<string>(this);
+		if (newProjectDir != null)
+		{
+			Close(newProjectDir);
+		}
+	}
 }

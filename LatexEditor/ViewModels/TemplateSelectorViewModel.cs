@@ -20,6 +20,9 @@ namespace LatexEditor.ViewModels
 		[ObservableProperty]
 		private string projectName = "";
 		
+		[ObservableProperty]
+		private string? selectedTemplate;
+		
 		private List<string> templates;
 		public List<Button> TemplateButtons = new List<Button>();
 
@@ -46,6 +49,17 @@ namespace LatexEditor.ViewModels
 					}
 				};
 				TemplateButtons.Add(button);
+				button.Click += (sender, e) => TemplateButtonClick(sender, e, template);
+			}
+		}
+		
+		private void TemplateButtonClick(object? sender, EventArgs e, string template)
+		{
+			if (sender is Button button)
+			{
+				TemplateButtons.ForEach(b => b.IsEnabled = true);
+				button.IsEnabled = false;
+				SelectedTemplate = Path.GetFullPath(template);
 			}
 		}
 		
