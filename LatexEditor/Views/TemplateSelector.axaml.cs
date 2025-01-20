@@ -48,6 +48,8 @@ public partial class TemplateSelector : Window
 					FsUtils.CopyDirectory(vm.SelectedTemplate, project, true);
 					if (Directory.Exists(project))
 					{
+						var box = MessageBoxManager.GetMessageBoxStandard("New Project Created", $"New project created at {project}", ButtonEnum.Ok);
+						box.ShowAsync();
 						Close(project);
 					}
 				}
