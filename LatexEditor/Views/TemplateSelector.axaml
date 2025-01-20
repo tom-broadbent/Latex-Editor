@@ -11,16 +11,19 @@
   <ScrollViewer>
     <Grid x:Name="RootGrid" RowDefinitions="Auto, Auto">
       <Grid x:Name="TemplateSelection" Grid.Row="0"/>
-      <Grid x:Name="Options" Grid.Row="1" RowDefinitions="Auto, Auto, Auto">
-        <Grid x:Name="ProjectName" ColumnDefinitions="Auto, Auto" Grid.Row="0">
+      <Grid x:Name="Options" Grid.Row="1" RowDefinitions="Auto, Auto, Auto, Auto">
+        <TextBlock Grid.Row="0">
+          Template: <TextBlock Text="{Binding SelectedTemplateName}"/>
+        </TextBlock>
+        <Grid x:Name="ProjectName" ColumnDefinitions="Auto, Auto" Grid.Row="1">
           <TextBlock Text="Project Name:" Grid.Column="0" VerticalAlignment="Center"/>
           <TextBox Watermark="Project Name" Text="{Binding ProjectName}" Grid.Column="1"/>
         </Grid>
-        <Grid x:Name="DirSelect" ColumnDefinitions="Auto, Auto" Grid.Row="1">
+        <Grid x:Name="DirSelect" ColumnDefinitions="Auto, Auto" Grid.Row="2">
           <TextBlock Text="Project Directory:" Grid.Column="0" VerticalAlignment="Center"/>
           <Button Content="{Binding ProjectDirectoryPath}" Command="{Binding SelectProjectDirCommand}" Grid.Column="1"/>
         </Grid>
-        <Grid ColumnDefinitions="Auto, Auto" Grid.Row="2">
+        <Grid ColumnDefinitions="Auto, Auto" Grid.Row="3">
           <Button x:Name="CancelButton" Grid.Column="0">Cancel</Button>
           <Button x:Name="OkButton" Grid.Column="1">Ok</Button>
         </Grid>

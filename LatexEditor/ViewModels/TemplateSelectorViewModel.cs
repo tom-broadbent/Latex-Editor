@@ -22,6 +22,8 @@ namespace LatexEditor.ViewModels
 		
 		[ObservableProperty]
 		private string? selectedTemplate;
+		[ObservableProperty]
+		private string? selectedTemplateName;
 		
 		private List<string> templates;
 		public List<Button> TemplateButtons = new List<Button>();
@@ -60,6 +62,7 @@ namespace LatexEditor.ViewModels
 				TemplateButtons.ForEach(b => b.IsEnabled = true);
 				button.IsEnabled = false;
 				SelectedTemplate = Path.GetFullPath(template);
+				SelectedTemplateName = Path.GetFileNameWithoutExtension(template);
 			}
 		}
 		
