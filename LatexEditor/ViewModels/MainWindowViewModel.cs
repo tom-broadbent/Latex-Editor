@@ -318,7 +318,14 @@ public partial class MainWindowViewModel : ViewModelBase
 
 		async void fileSystemEvent(object? sender, FileSystemEventArgs e)
 		{
-			await FileTreeLoad(folder);
+			if (Directory.Exists(folder.Path.LocalPath))
+			{
+				await FileTreeLoad(folder);
+			}
+			else
+			{
+				UnloadFolder();
+			}
 		}
 
 		watcher = new FileSystemWatcher(folder.Path.LocalPath);
