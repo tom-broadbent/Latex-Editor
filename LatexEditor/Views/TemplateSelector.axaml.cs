@@ -1,9 +1,6 @@
 using System;
 using System.IO;
-using System.Linq;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using LatexEditor.ViewModels;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
@@ -40,24 +37,39 @@ public partial class TemplateSelector : Window
 		var vm = DataContext as TemplateSelectorViewModel;
 		if (vm != null)
 		{
-			if (vm.SelectedTemplate != null && vm.ProjectDirectoryPath != "..." && !string.IsNullOrEmpty(vm.ProjectName))
+
+			try
 			{
-				try
+				if (vm.SelectedTemplate == null)
 				{
-					var project = Path.Join(vm.ProjectDirectoryPath, vm.ProjectName);
-					FsUtils.CopyDirectory(vm.SelectedTemplate, project, true);
-					if (Directory.Exists(project))
-					{
-						var box = MessageBoxManager.GetMessageBoxStandard("New Project Created", $"New project created at {project}", ButtonEnum.Ok);
-						box.ShowAsync();
-						Close(project);
-					}
+					throw new Exception("No template selected. Please select a template.");
 				}
-				catch (Exception ex)
+				else if (vm.ProjectDirectoryPath == "...")
 				{
-					var box = MessageBoxManager.GetMessageBoxStandard("Error", ex.ToString(), ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
-					box.ShowAsync();
+					throw new Exception("No directory selected. Please select a directory to contain the project.");
 				}
+				else if (string.IsNullOrEmpty(vm.ProjectName))
+				{
+					throw new Exception("No project name entered. Please enter a name for the project.");
+				}
+				else
+				{
+                    var project = Path.Join(vm.ProjectDirectoryPath, vm.ProjectName);
+                    if (Directory.Exists(project))
+                    {
+                        throw new Exception($"{project} already exists. Please enter a different project name or select a different directory.");
+                    }
+                    FsUtils.CopyDirectory(vm.SelectedTemplate, project, true);
+                    if (Directory.Exists(project))
+                    {
+                        Close(project);
+                    }
+                }
+			}
+			catch (Exception ex)
+			{
+				var box = MessageBoxManager.GetMessageBoxStandard("Error", ex.Message, ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+				box.ShowAsync();
 			}
 		}
 	}

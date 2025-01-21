@@ -213,7 +213,9 @@ public partial class MainWindowViewModel : ViewModelBase
 			var dir = await FsUtils.TryGetFolderFromPathAsync(newProjectPath);
 			if (dir != null)
 			{
-				await OpenFolder(dir);
+                var box = MessageBoxManager.GetMessageBoxStandard("New Project Created", $"New project created at {newProjectPath}", ButtonEnum.Ok);
+                await box.ShowAsync();
+                await OpenFolder(dir);
 			}
 		}
 	}

@@ -2,16 +2,18 @@
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using PDFtoImage;
+using PdfConvert = PDFtoImage.Conversion;
 
 namespace LatexEditor.ViewModels
 {
-	internal partial class TemplateSelectorViewModel : ViewModelBase
+    internal partial class TemplateSelectorViewModel : ViewModelBase
 	{
 		[ObservableProperty]
 		private string projectDirectoryPath = "...";
@@ -37,12 +39,25 @@ namespace LatexEditor.ViewModels
 			
 			foreach (var template in templates)
 			{
+				var texFile = Directory.GetFiles(template, "*.tex")[0];
+				SKBitmap? image = null;
+				if (Path.Exists(texFile))
+				{
+					using (var fs = File.OpenRead(Path.ChangeExtension(texFile, ".pdf")))
+					{
+						image = PdfConvert.ToImage(fs, new Index(0), options: new RenderOptions()
+						{
+							Dpi = 20
+						});
+					}
+				}
+
 				var button = new Button()
 				{
 					Content = new StackPanel()
 					{
 						Children = 
-						{
+						{							
 							new TextBlock()
 							{
 								Text = Path.GetFileNameWithoutExtension(template)
@@ -50,6 +65,15 @@ namespace LatexEditor.ViewModels
 						}
 					}
 				};
+				if (image != null)
+				{
+					((StackPanel)button.Content).Children.Add(new Image()
+					{
+						Source = image.ToAvaloniaImage(),
+						Width = image.Width,
+						Height = image.Height
+					});
+				}
 				TemplateButtons.Add(button);
 				button.Click += (sender, e) => TemplateButtonClick(sender, e, template);
 			}
