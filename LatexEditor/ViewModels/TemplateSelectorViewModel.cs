@@ -12,6 +12,7 @@ using PdfConvert = PDFtoImage.Conversion;
 using Avalonia;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Controls.Primitives;
 
 namespace LatexEditor.ViewModels
 {
@@ -30,7 +31,7 @@ namespace LatexEditor.ViewModels
 		private string? selectedTemplateName;
 		
 		private List<string> templates;
-		public List<Button> TemplateButtons = new List<Button>();
+		public List<ToggleButton> TemplateButtons = new List<ToggleButton>();
 		private double templatePreviewWidth = 300.0;
 
 		public TemplateSelectorViewModel()
@@ -52,7 +53,7 @@ namespace LatexEditor.ViewModels
 					}
 				}
 
-				var button = new Button()
+				var button = new ToggleButton()
 				{
 					Content = new StackPanel()
 					{
@@ -87,10 +88,10 @@ namespace LatexEditor.ViewModels
 		
 		private void TemplateButtonClick(object? sender, EventArgs e, string template)
 		{
-			if (sender is Button button)
+			if (sender is ToggleButton button)
 			{
-				TemplateButtons.ForEach(b => b.IsEnabled = true);
-				button.IsEnabled = false;
+				TemplateButtons.ForEach(b => b.IsChecked = false);
+				button.IsChecked = true;
 				SelectedTemplate = Path.GetFullPath(template);
 				SelectedTemplateName = Path.GetFileNameWithoutExtension(template);
 			}
