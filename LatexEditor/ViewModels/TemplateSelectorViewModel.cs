@@ -30,9 +30,12 @@ namespace LatexEditor.ViewModels
 		[ObservableProperty]
 		private string? selectedTemplateName;
 		
+		public List<Expander> Expanders => _expanders.Values.ToList();
+		private Dictionary<string, Expander> _expanders = new Dictionary<string, Expander>();
+		
 		private List<string> templates;
-		public List<ToggleButton> TemplateButtons = new List<ToggleButton>();
 		private double templatePreviewWidth = 300.0;
+		private int templateGridColumns = 4;
 
 		public TemplateSelectorViewModel()
 		{
@@ -43,6 +46,20 @@ namespace LatexEditor.ViewModels
 			
 			foreach (var template in templates)
 			{
+				var templateDir = Path.GetDirectoryName(template);
+				if (!_expanders.ContainsKey(templateDir))
+				{
+					var grid = new Grid();
+					for (int c = 0; c < templateGridColumns; c++)
+					{
+						grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+					}
+					_expanders.Add(templateDir, new Expander()
+					{
+						Header = Path.GetFileNameWithoutExtension(templateDir),
+						Content = grid
+					});
+				}
 				var texFile = Directory.GetFiles(template, "*.tex")[0];
 				SKBitmap? image = null;
 				if (Path.Exists(texFile))
@@ -61,7 +78,8 @@ namespace LatexEditor.ViewModels
 						{							
 							new TextBlock()
 							{
-								Text = Path.GetFileNameWithoutExtension(template)
+								Text = Path.GetFileNameWithoutExtension(template),
+								HorizontalAlignment = HorizontalAlignment.Center
 							}
 						},
 					}
@@ -81,7 +99,16 @@ namespace LatexEditor.ViewModels
 						RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Relative)
 					});
 				}
-				TemplateButtons.Add(button);
+				var buttonGrid = _expanders[templateDir].Content as Grid;
+				var gridColumn = buttonGrid.Children.Count % templateGridColumns;
+				var gridRow = buttonGrid.Children.Count / templateGridColumns;
+				if (gridRow >= buttonGrid.RowDefinitions.Count)
+				{
+					buttonGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+				}
+				button[Grid.ColumnProperty] = gridColumn;
+				button[Grid.RowProperty] = gridRow;
+				buttonGrid.Children.Add(button);
 				button.Click += (sender, e) => TemplateButtonClick(sender, e, template);
 			}
 		}
@@ -90,7 +117,13 @@ namespace LatexEditor.ViewModels
 		{
 			if (sender is ToggleButton button)
 			{
-				TemplateButtons.ForEach(b => b.IsChecked = false);
+				_expanders.Values.ToList().ForEach(e => ((Grid)e.Content).Children.ToList().ForEach(b => 
+				{
+					if (b is ToggleButton button)
+					{
+						button.IsChecked = false;
+					}
+				}));
 				button.IsChecked = true;
 				SelectedTemplate = Path.GetFullPath(template);
 				SelectedTemplateName = Path.GetFileNameWithoutExtension(template);

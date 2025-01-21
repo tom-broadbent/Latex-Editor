@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using Avalonia.Controls;
 using LatexEditor.ViewModels;
 using MsBox.Avalonia;
@@ -17,26 +18,11 @@ public partial class TemplateSelector : Window
 		CancelButton.Click += CancelButtonClick;
 		OkButton.Click += OkButtonClick;
 		
-		var templateColumns = 4;
-		var templateRows = (vm.TemplateButtons.Count + templateColumns - 1) / templateColumns;
-		for (var c = 0; c < templateColumns; c++)
-		{
-			TemplateSelection.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
-		}
-		for (var r = 0; r < templateRows; r++)
+		foreach (var expander in vm.Expanders)
 		{
 			TemplateSelection.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-		}
-		
-		var i = 0;
-		foreach (var button in vm.TemplateButtons)
-		{
-			var col = i % templateColumns;
-			var row = i / templateColumns;
-			button[Grid.ColumnProperty] = col;
-			button[Grid.RowProperty] = row;
-			TemplateSelection.Children.Add(button);
-			i++;
+			expander[Grid.RowProperty] = TemplateSelection.RowDefinitions.Count - 1;
+			TemplateSelection.Children.Add(expander);
 		}
 	}
 	

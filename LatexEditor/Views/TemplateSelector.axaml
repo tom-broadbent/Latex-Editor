@@ -9,9 +9,10 @@
         Title="New Project From Template">
 
   <ScrollViewer>
-    <Grid x:Name="RootGrid" RowDefinitions="Auto, Auto">
-      <Grid x:Name="TemplateSelection" Grid.Row="0"/>
-      <Grid x:Name="Options" Grid.Row="1" RowDefinitions="Auto, Auto, Auto, Auto">
+    <Grid x:Name="RootGrid" RowDefinitions="Auto, Auto, Auto">
+      <TextBlock Grid.Row="0">Available Templates:</TextBlock>
+      <Grid x:Name="TemplateSelection" Grid.Row="1"/>
+      <Grid x:Name="Options" Grid.Row="2" RowDefinitions="Auto, Auto, Auto, Auto">
         <TextBlock Grid.Row="0">
           Template: <TextBlock Text="{Binding SelectedTemplateName}"/>
         </TextBlock>
