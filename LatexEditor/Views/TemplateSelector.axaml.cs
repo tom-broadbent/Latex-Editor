@@ -18,12 +18,26 @@ public partial class TemplateSelector : Window
 		CancelButton.Click += CancelButtonClick;
 		OkButton.Click += OkButtonClick;
 		
+		var templateColumns = 4;
+		var templateRows = (vm.TemplateButtons.Count + templateColumns - 1) / templateColumns;
+		for (var c = 0; c < templateColumns; c++)
+		{
+			TemplateSelection.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+		}
+		for (var r = 0; r < templateRows; r++)
+		{
+			TemplateSelection.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+		}
+		
 		var i = 0;
 		foreach (var button in vm.TemplateButtons)
 		{
-			TemplateSelection.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-			button[Grid.RowProperty] = i++;
+			var col = i % templateColumns;
+			var row = i / templateColumns;
+			button[Grid.ColumnProperty] = col;
+			button[Grid.RowProperty] = row;
 			TemplateSelection.Children.Add(button);
+			i++;
 		}
 	}
 	
@@ -54,17 +68,17 @@ public partial class TemplateSelector : Window
 				}
 				else
 				{
-                    var project = Path.Join(vm.ProjectDirectoryPath, vm.ProjectName);
-                    if (Directory.Exists(project))
-                    {
-                        throw new Exception($"{project} already exists. Please enter a different project name or select a different directory.");
-                    }
-                    FsUtils.CopyDirectory(vm.SelectedTemplate, project, true);
-                    if (Directory.Exists(project))
-                    {
-                        Close(project);
-                    }
-                }
+					var project = Path.Join(vm.ProjectDirectoryPath, vm.ProjectName);
+					if (Directory.Exists(project))
+					{
+						throw new Exception($"{project} already exists. Please enter a different project name or select a different directory.");
+					}
+					FsUtils.CopyDirectory(vm.SelectedTemplate, project, true);
+					if (Directory.Exists(project))
+					{
+						Close(project);
+					}
+				}
 			}
 			catch (Exception ex)
 			{
