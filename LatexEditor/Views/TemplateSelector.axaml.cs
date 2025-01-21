@@ -9,7 +9,6 @@ namespace LatexEditor.Views;
 
 public partial class TemplateSelector : Window
 {
-	private string? template;
 	public TemplateSelector()
 	{
 		InitializeComponent();

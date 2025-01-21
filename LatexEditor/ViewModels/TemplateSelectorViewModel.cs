@@ -8,12 +8,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using PDFtoImage;
 using PdfConvert = PDFtoImage.Conversion;
+using Avalonia;
+using Avalonia.Layout;
+using Avalonia.Media;
 
 namespace LatexEditor.ViewModels
 {
-    internal partial class TemplateSelectorViewModel : ViewModelBase
+	internal partial class TemplateSelectorViewModel : ViewModelBase
 	{
 		[ObservableProperty]
 		private string projectDirectoryPath = "...";
@@ -29,6 +31,7 @@ namespace LatexEditor.ViewModels
 		
 		private List<string> templates;
 		public List<Button> TemplateButtons = new List<Button>();
+		private double templatePreviewWidth = 300.0;
 
 		public TemplateSelectorViewModel()
 		{
@@ -45,10 +48,7 @@ namespace LatexEditor.ViewModels
 				{
 					using (var fs = File.OpenRead(Path.ChangeExtension(texFile, ".pdf")))
 					{
-						image = PdfConvert.ToImage(fs, new Index(0), options: new RenderOptions()
-						{
-							Dpi = 20
-						});
+						image = PdfConvert.ToImage(fs, new Index(0));
 					}
 				}
 
@@ -62,16 +62,22 @@ namespace LatexEditor.ViewModels
 							{
 								Text = Path.GetFileNameWithoutExtension(template)
 							}
-						}
+						},
 					}
 				};
 				if (image != null)
 				{
-					((StackPanel)button.Content).Children.Add(new Image()
+					var imageScale = templatePreviewWidth / image.Width;
+					var templatePreviewHeight = imageScale * image.Height;
+					((StackPanel)button.Content).Children.Insert(0, new Image()
 					{
 						Source = image.ToAvaloniaImage(),
-						Width = image.Width,
-						Height = image.Height
+						Width = templatePreviewWidth,
+						Height = templatePreviewHeight,
+						RenderTransform = new ScaleTransform(imageScale, imageScale),
+						VerticalAlignment = VerticalAlignment.Top,
+						HorizontalAlignment = HorizontalAlignment.Left,
+						RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Relative)
 					});
 				}
 				TemplateButtons.Add(button);
