@@ -64,9 +64,13 @@ namespace LatexEditor.ViewModels
 				SKBitmap? image = null;
 				if (Path.Exists(texFile))
 				{
-					using (var fs = File.OpenRead(Path.ChangeExtension(texFile, ".pdf")))
+					var pdf = Path.ChangeExtension(texFile, ".pdf");
+					if (Path.Exists(pdf))
 					{
-						image = PdfConvert.ToImage(fs, new Index(0));
+						using (var fs = File.OpenRead(pdf))
+						{
+							image = PdfConvert.ToImage(fs, new Index(0));
+						}
 					}
 				}
 
@@ -84,21 +88,32 @@ namespace LatexEditor.ViewModels
 						},
 					}
 				};
+				
+				IImage avaloniaImage;
 				if (image != null)
 				{
-					var imageScale = templatePreviewWidth / image.Width;
-					var templatePreviewHeight = imageScale * image.Height;
-					((StackPanel)button.Content).Children.Insert(0, new Image()
-					{
-						Source = image.ToAvaloniaImage(),
-						Width = templatePreviewWidth,
-						Height = templatePreviewHeight,
-						RenderTransform = new ScaleTransform(imageScale, imageScale),
-						VerticalAlignment = VerticalAlignment.Top,
-						HorizontalAlignment = HorizontalAlignment.Left,
-						RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Relative)
-					});
+					avaloniaImage = image.ToAvaloniaImage();
 				}
+				else
+				{
+					var uri = new Uri("Assets/NoPreview.png");
+					avaloniaImage = ImageHelper.LoadFromResource(uri);
+				}
+				var imageScale = templatePreviewWidth / avaloniaImage.Size.Width;
+				var templatePreviewHeight = imageScale * avaloniaImage.Size.Height;
+				var templatePreview = new Image()
+				{
+					Source = avaloniaImage,
+					Width = templatePreviewWidth,
+					Height = templatePreviewHeight,
+					RenderTransform = new ScaleTransform(imageScale, imageScale),
+					VerticalAlignment = VerticalAlignment.Top,
+					HorizontalAlignment = HorizontalAlignment.Left,
+					RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Relative)
+				};
+				
+				((StackPanel)button.Content).Children.Insert(0, templatePreview);
+				
 				var buttonGrid = _expanders[templateDir].Content as Grid;
 				var gridColumn = buttonGrid.Children.Count % templateGridColumns;
 				var gridRow = buttonGrid.Children.Count / templateGridColumns;
