@@ -71,7 +71,10 @@ namespace LatexEditor.ViewModels
 					{
 						using (var fs = File.OpenRead(pdf))
 						{
-							image = PdfConvert.ToImage(fs, new Index(0));
+							image = PdfConvert.ToImage(fs, new Index(0), options: new PDFtoImage.RenderOptions()
+                            {
+                                Dpi = 50
+                            });
 						}
 					}
 				}
