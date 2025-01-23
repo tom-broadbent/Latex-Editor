@@ -48,12 +48,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaResource Update="Assets\NoPreview.png">
-      <CopyToOutputDirectory></CopyToOutputDirectory>
-    </AvaloniaResource>
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Update="Views\EnterTextDialog.axaml.cs">
       <DependentUpon>EnterTextDialog.axaml</DependentUpon>
     </Compile>

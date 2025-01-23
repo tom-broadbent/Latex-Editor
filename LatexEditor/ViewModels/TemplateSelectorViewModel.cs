@@ -13,6 +13,8 @@ using Avalonia;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Controls.Primitives;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 
 namespace LatexEditor.ViewModels
 {
@@ -34,7 +36,7 @@ namespace LatexEditor.ViewModels
 		private Dictionary<string, Expander> _expanders = new Dictionary<string, Expander>();
 		
 		private List<string> templates;
-		private double templatePreviewWidth = 300.0;
+		private double templatePreviewWidth = 200.0;
 		private int templateGridColumns = 4;
 
 		public TemplateSelectorViewModel()
@@ -96,9 +98,8 @@ namespace LatexEditor.ViewModels
 				}
 				else
 				{
-					var uri = new Uri("Assets/NoPreview.png");
-					avaloniaImage = ImageHelper.LoadFromResource(uri);
-				}
+					avaloniaImage = new Bitmap(AssetLoader.Open(new Uri("avares://LatexEditor/Assets/NoPreview.png")));
+                }
 				var imageScale = templatePreviewWidth / avaloniaImage.Size.Width;
 				var templatePreviewHeight = imageScale * avaloniaImage.Size.Height;
 				var templatePreview = new Image()
