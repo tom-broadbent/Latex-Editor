@@ -92,28 +92,31 @@ namespace LatexEditor.ViewModels
 				};
 				
 				IImage avaloniaImage;
+
 				if (image != null)
 				{
 					avaloniaImage = image.ToAvaloniaImage();
-				}
+                }
 				else
 				{
 					avaloniaImage = new Bitmap(AssetLoader.Open(new Uri("avares://LatexEditor/Assets/NoPreview.png")));
                 }
-				var imageScale = templatePreviewWidth / avaloniaImage.Size.Width;
-				var templatePreviewHeight = imageScale * avaloniaImage.Size.Height;
-				var templatePreview = new Image()
-				{
-					Source = avaloniaImage,
-					Width = templatePreviewWidth,
-					Height = templatePreviewHeight,
-					RenderTransform = new ScaleTransform(imageScale, imageScale),
-					VerticalAlignment = VerticalAlignment.Top,
-					HorizontalAlignment = HorizontalAlignment.Left,
-					RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Relative)
-				};
-				
-				((StackPanel)button.Content).Children.Insert(0, templatePreview);
+
+                var imageScale = templatePreviewWidth / avaloniaImage.Size.Width;
+                var templatePreviewHeight = imageScale * avaloniaImage.Size.Height;
+                var templatePreview = new Image()
+                {
+                    Source = avaloniaImage,
+                    Width = templatePreviewWidth,
+                    Height = templatePreviewHeight,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Relative),
+					RenderTransform = image != null ? new ScaleTransform(imageScale, imageScale) : default
+                };
+
+
+                ((StackPanel)button.Content).Children.Insert(0, templatePreview);
 				
 				var buttonGrid = _expanders[templateDir].Content as Grid;
 				var gridColumn = buttonGrid.Children.Count % templateGridColumns;
