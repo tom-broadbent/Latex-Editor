@@ -19,6 +19,7 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
+using System.Collections.Generic;
 
 namespace LatexEditor.ViewModels;
 
@@ -50,9 +51,22 @@ public partial class MainWindowViewModel : ViewModelBase
 	[ObservableProperty]
 	private ObservableCollection<DirectoryNode> fileTree = new ObservableCollection<DirectoryNode>();
 
-	private FileSystemWatcher? watcher;
+	private List<FileSystemWatcher> watchers = new List<FileSystemWatcher>();
 	private static MainWindow? window => ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
 	private SymbolPickerViewModel symbolPickerViewModel = new SymbolPickerViewModel();
+
+	private void UnloadFile()
+	{
+		Text = "";
+		OriginalText = Text;
+		OpenFileName = null;
+		openFilePath = null;
+		window.Title = Constants.ApplicationName;
+        window.ChangesMade = false;
+		PdfPath = null;
+		Document.Text = Text;
+
+    }
 
 	internal async Task OpenFile(IStorageFile file, CancellationToken token)
 	{
@@ -78,13 +92,10 @@ public partial class MainWindowViewModel : ViewModelBase
 		}
 	}
 
-	private void UnloadFolder()
+	private void UnloadAllFolders()
 	{
 		FileTree.Clear();
-		if (watcher != null)
-		{
-			watcher.Dispose();
-		}
+		watchers.Clear();
 	}
 
 	[RelayCommand]
@@ -239,7 +250,7 @@ public partial class MainWindowViewModel : ViewModelBase
 			if (file is null) return;
 
 			await OpenFile(file, token);
-			UnloadFolder();
+			UnloadAllFolders();
 		}
 		catch (Exception e)
 		{
@@ -289,11 +300,15 @@ public partial class MainWindowViewModel : ViewModelBase
 		}
 	}
 
-	private async Task FileTreeLoad(IStorageFolder folder)
+	private async Task FileTreeLoad(IStorageFolder folder, bool appendToExistingTree=false)
 	{
 		var folderNode = await LoadFolder(folder);
-		FileTree = null;
-		FileTree = new ObservableCollection<DirectoryNode> { folderNode };  // using Clear() and Add() caused duplicates for some reason
+		if (!appendToExistingTree)
+		{
+			FileTree = null;
+			FileTree = new ObservableCollection<DirectoryNode>();
+		}
+		FileTree.Add(folderNode);
 		await Dispatcher.UIThread.InvokeAsync(() =>
 		{
 			var descendants = window.fileTreeView.GetLogicalDescendants().OfType<TreeViewItem>();
@@ -309,13 +324,13 @@ public partial class MainWindowViewModel : ViewModelBase
 		});
 	}
 
-	private async Task OpenFolder(IStorageFolder folder)
+	private async Task OpenFolder(IStorageFolder folder, bool closeOpenFolders=true)
 	{
 		if (folder is null) return;
 
-		if (watcher != null)
+		if (closeOpenFolders)
 		{
-			watcher.Dispose();
+			UnloadAllFolders();
 		}
 
 		async void fileSystemEvent(object? sender, FileSystemEventArgs e)
@@ -326,11 +341,11 @@ public partial class MainWindowViewModel : ViewModelBase
 			}
 			else
 			{
-				UnloadFolder();
+				UnloadAllFolders();
 			}
 		}
 
-		watcher = new FileSystemWatcher(folder.Path.LocalPath);
+		var watcher = new FileSystemWatcher(folder.Path.LocalPath);
 
 		watcher.NotifyFilter = NotifyFilters.Attributes
 							 | NotifyFilters.CreationTime
@@ -348,6 +363,8 @@ public partial class MainWindowViewModel : ViewModelBase
 
 		watcher.IncludeSubdirectories = true;
 		watcher.EnableRaisingEvents = true;
+
+		watchers.Add(watcher);
 
 		await FileTreeLoad(folder);
 	}
@@ -595,12 +612,39 @@ public partial class MainWindowViewModel : ViewModelBase
 				if (result != null)
 				{
 					var path = selected.Path.LocalPath;
-					if (selected.SubNodes == null)
+
+                    var confirm = MessageBoxManager.GetMessageBoxStandard(
+                        "Confirm",
+                        "You have unsaved changes in the editor. In order to rename this file, the file in the editor must be closed.\nDo you want to continue? Your changes will be lost.",
+                        ButtonEnum.YesNo
+                    );
+
+                    if (selected.SubNodes == null) // if it's a file
 					{
+						if (selected.Path.LocalPath == openFilePath) // close open file if it's the one being renamed
+						{
+                            if (window.ChangesMade)
+                            {
+                                var confirmResult = await confirm.ShowWindowDialogAsync(window);
+                                if (confirmResult == ButtonResult.No) return;
+                            }
+
+                            UnloadFile();
+						}
 						File.Move(path, Path.Join(Path.GetDirectoryName(path), result));
 					}
-					else
+					else // if it's a directory
 					{
+						if (selected.SearchDescendants(x => x.Path.LocalPath == openFilePath) != null) // close open file if it is contained in the folder being renamed
+						{
+                            if (window.ChangesMade)
+                            {
+                                var confirmResult = await confirm.ShowWindowDialogAsync(window);
+                                if (confirmResult == ButtonResult.No) return;
+                            }
+
+                            UnloadFile();
+						}
 						var newPath = Path.Join(Path.GetDirectoryName(path), result);
 						Directory.Move(path, newPath);
 
@@ -609,6 +653,7 @@ public partial class MainWindowViewModel : ViewModelBase
 							var folder = await FsUtils.TryGetFolderFromPathAsync(newPath);
 							if (folder != null)
 							{
+								UnloadFile();
 								await OpenFolder(folder);
 							}
 						}

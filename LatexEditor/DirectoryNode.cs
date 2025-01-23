@@ -5,6 +5,7 @@ using DynamicData;
 using LatexEditor.ViewModels;
 using LatexEditor.Views;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -31,6 +32,43 @@ namespace LatexEditor
 			SubNodes = subNodes;
 			Path = path;
 			Parent = parent;
+		}
+
+		public List<DirectoryNode> GetAllDescendants()
+		{
+			var returnList = new List<DirectoryNode>() { this };
+			if (SubNodes != null)
+			{
+				foreach (var child in SubNodes)
+				{
+					returnList.Add(child.GetAllDescendants());
+				}
+			}
+			return returnList;
+		}
+
+		public DirectoryNode? SearchDescendants(Func<DirectoryNode, bool> predicate)
+		{
+			if (predicate(this))
+			{
+				return this;
+			}
+			else if (SubNodes != null)
+			{
+				foreach (var child in SubNodes)
+				{
+					var childSearch = child.SearchDescendants(predicate);
+					if (childSearch != null)
+					{
+						return childSearch;
+					}
+				}
+				return null;
+			}
+			else
+			{
+				return null;
+			}
 		}
 
 		public async void OnExpandRequested()
