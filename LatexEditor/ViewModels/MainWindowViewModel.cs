@@ -54,6 +54,7 @@ public partial class MainWindowViewModel : ViewModelBase
 	private List<FileSystemWatcher> watchers = new List<FileSystemWatcher>();
 	private static MainWindow? window => ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
 	private SymbolPickerViewModel symbolPickerViewModel = new SymbolPickerViewModel();
+	private bool multipleOpenFolders = false;
 
 	private void UnloadFile()
 	{
@@ -300,20 +301,35 @@ public partial class MainWindowViewModel : ViewModelBase
 		}
 	}
 
-	private async Task FileTreeLoad(IStorageFolder folder, bool appendToExistingTree=false)
+	private async Task FileTreeLoad(IStorageFolder folder, bool clearTree=true)
 	{
 		var folderNode = await LoadFolder(folder);
-		if (!appendToExistingTree)
+		var ftList = new List<DirectoryNode>();
+		if (clearTree)
 		{
-			FileTree = null;
-			FileTree = new ObservableCollection<DirectoryNode>();
+			FileTree.Clear();
 		}
-		FileTree.Add(folderNode);
+		foreach (var item in FileTree)
+		{
+			if (item.Path != folderNode.Path)
+			{
+                ftList.Add(item);
+            }
+			else
+			{
+				ftList.Add(folderNode);
+			}
+		}
+		if (!ftList.Contains(folderNode))
+		{
+            ftList.Add(folderNode);
+        }
+		FileTree = null;
+		FileTree = new ObservableCollection<DirectoryNode>(ftList);
 		await Dispatcher.UIThread.InvokeAsync(() =>
 		{
 			var descendants = window.fileTreeView.GetLogicalDescendants().OfType<TreeViewItem>();
-			var treeViewItem = descendants.First();
-			treeViewItem.IsExpanded = true;
+			descendants.ToList().ForEach(item => item.IsExpanded = true);
 
 			var treeViewContextMenu = new TreeViewContextMenuBuilder(this);
 			var contextMenu = treeViewContextMenu.ContextMenu;
@@ -333,11 +349,12 @@ public partial class MainWindowViewModel : ViewModelBase
 			UnloadAllFolders();
 		}
 
+		multipleOpenFolders = !closeOpenFolders;
 		async void fileSystemEvent(object? sender, FileSystemEventArgs e)
 		{
 			if (Directory.Exists(folder.Path.LocalPath))
 			{
-				await FileTreeLoad(folder);
+				await FileTreeLoad(folder, !multipleOpenFolders);
 			}
 			else
 			{
@@ -366,33 +383,44 @@ public partial class MainWindowViewModel : ViewModelBase
 
 		watchers.Add(watcher);
 
-		await FileTreeLoad(folder);
+		await FileTreeLoad(folder, closeOpenFolders);
+	}
+
+	private async Task PickFolder(CancellationToken token, bool closeOpenFolders = true)
+	{
+        try
+        {
+            if (window.ChangesMade && closeOpenFolders)
+            {
+                var confirm = MessageBoxManager.GetMessageBoxStandard(
+                    "Confirm",
+                    "You have unsaved changes in the editor. Are you sure you want to open a folder? Unsaved changes will be lost.",
+                    ButtonEnum.YesNo
+                );
+                var result = await confirm.ShowWindowDialogAsync(window);
+                if (result == ButtonResult.No) return;
+            }
+
+            var folder = await FsUtils.DoOpenFolderPickerAsync();
+            await OpenFolder(folder, closeOpenFolders);
+        }
+        catch (Exception e)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+            box.ShowAsync();
+        }
+    }
+
+	[RelayCommand]
+	private async Task PickFolderClearTree(CancellationToken token)
+	{
+		await PickFolder(token, true);
 	}
 
 	[RelayCommand]
-	private async Task PickFolder(CancellationToken token)
+	private async Task PickFolderAddToTree(CancellationToken token)
 	{
-		try
-		{
-			if (window.ChangesMade)
-			{
-				var confirm = MessageBoxManager.GetMessageBoxStandard(
-					"Confirm",
-					"You have unsaved changes in the editor. Are you sure you want to open a folder? Unsaved changes will be lost.",
-					ButtonEnum.YesNo
-				);
-				var result = await confirm.ShowWindowDialogAsync(window);
-				if (result == ButtonResult.No) return;
-			}
-
-			var folder = await FsUtils.DoOpenFolderPickerAsync();
-			await OpenFolder(folder);
-		}
-		catch(Exception e)
-		{
-			var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
-			box.ShowAsync();
-		}
+		await PickFolder(token, false);
 	}
 	
 
@@ -654,7 +682,8 @@ public partial class MainWindowViewModel : ViewModelBase
 							if (folder != null)
 							{
 								UnloadFile();
-								await OpenFolder(folder);
+								FileTree.Remove(selected);
+								await OpenFolder(folder, false);
 							}
 						}
 					}

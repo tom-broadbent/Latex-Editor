@@ -27,8 +27,9 @@
     <Menu Grid.Row="0">
       <MenuItem Header="_File">
         <MenuItem Command="{Binding NewProjectCommand}" Header="_New Project" HotKey="Ctrl+N"/>
-        <MenuItem Command="{Binding SelectFileCommand}" Header="_Open" HotKey="Ctrl+O"/>
-        <MenuItem Command="{Binding PickFolderCommand}" Header="_Open Folder"/>
+        <MenuItem Command="{Binding SelectFileCommand}" Header="_Open File" HotKey="Ctrl+O"/>
+        <MenuItem Command="{Binding PickFolderClearTreeCommand}" Header="_Open Folder"/>
+        <MenuItem Command="{Binding PickFolderAddToTreeCommand}" Header="_Open Additional Folder"/>
         <MenuItem Command="{Binding SaveFileCommand}" Header="_Save" HotKey="Ctrl+S"/>
         <MenuItem Command="{Binding SaveAsFileCommand}" Header="_Save As" HotKey="Ctrl+Shift+S"/>
         <Separator/>
