@@ -17,14 +17,14 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-  <Grid ColumnDefinitions="Auto, Auto, 2*, Auto, *"
+  <Grid ColumnDefinitions="*, Auto, 4*, Auto, 2*"
       RowDefinitions="Auto, *, Auto"
       x:Name="Root">
     
     <GridSplitter Grid.Column="1" Grid.Row="1" Grid.RowSpan="2" Background="Gray" ResizeDirection="Columns"/>
     <GridSplitter Grid.Column="3" Grid.Row="1" Grid.RowSpan="2" Background="Gray" ResizeDirection="Columns"/>
 
-    <Menu Grid.Row="0">
+    <Menu Grid.Row="0" Grid.ColumnSpan="4">
       <MenuItem Header="_File">
         <MenuItem Command="{Binding NewProjectCommand}" Header="_New Project" HotKey="Ctrl+N"/>
         <MenuItem Command="{Binding SelectFileCommand}" Header="_Open File" HotKey="Ctrl+O"/>

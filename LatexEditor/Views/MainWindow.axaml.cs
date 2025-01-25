@@ -1,16 +1,12 @@
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.TextMate;
 using LatexEditor.ViewModels;
 using System.Linq;
 using System.Threading;
 using TextMateSharp.Grammars;
-using System;
-using Avalonia;
 using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
-using System.Threading.Tasks;
 
 namespace LatexEditor.Views;
 
