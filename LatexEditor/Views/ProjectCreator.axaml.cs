@@ -14,12 +14,27 @@ public partial class ProjectCreator : Window
 		InitializeComponent();
 		DataContext = new ProjectCreatorViewModel();
 		fromTemplate.Click += (s, e) => OpenTemplateSelector();
+		custom.Click += (s, e) => OpenNewDocumentFormatter();
 	}
 
 	private async void OpenTemplateSelector()
 	{
 		var templateSelector = new TemplateSelector();
 		var newProjectDir = await templateSelector.ShowDialog<string>(this);
+		if (newProjectDir != null)
+		{
+			Close(newProjectDir);
+		}
+	}
+
+	private async void OpenNewDocumentFormatter()
+	{
+		var docFormatter = new NewDocumentFormatter()
+		{
+			Width = 500,
+			Height = 400
+		};
+		var newProjectDir = await docFormatter.ShowDialog<string>(this);
 		if (newProjectDir != null)
 		{
 			Close(newProjectDir);

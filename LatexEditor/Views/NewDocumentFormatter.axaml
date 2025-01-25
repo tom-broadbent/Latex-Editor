@@ -1,0 +1,45 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:LatexEditor.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="LatexEditor.Views.NewDocumentFormatter"
+        x:DataType="vm:NewDocumentFormatterViewModel"
+        Title="Format New TeX Document">
+  <Grid ColumnDefinitions="Auto, Auto"
+        RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
+    
+    <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Document Class</TextBlock>
+    <ComboBox x:Name="DocumentClassComboBox" Grid.Row="0" Grid.Column="1"/>
+    
+    <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">Page Size</TextBlock>
+    <ComboBox x:Name="PageSizeComboBox" Grid.Row="1" Grid.Column="1"/>
+    
+    <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">Page Orientation</TextBlock>
+    <ComboBox x:Name="PageOrientationComboBox" Grid.Row="2" Grid.Column="1" />
+    
+    <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center">Top Margin</TextBlock>
+    <NumericUpDown x:Name="TopMarginUpDown" Grid.Row="3" Grid.Column="1" Value="{Binding TopMargin}" Minimum="0"/>
+    
+    <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center">Bottom Margin</TextBlock>
+    <NumericUpDown x:Name="BottomMarginUpDown" Grid.Row="4" Grid.Column="1" Value="{Binding BottomMargin}" Minimum="0"/>
+    
+    <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center">Left Margin</TextBlock>
+    <NumericUpDown x:Name="LeftMarginUpDown" Grid.Row="5" Grid.Column="1" Value="{Binding LeftMargin}" Minimum="0"/>
+    
+    <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center">Right Margin</TextBlock>
+    <NumericUpDown x:Name="RightMarginUpDown" Grid.Row="6" Grid.Column="1" Value="{Binding RightMargin}" Minimum="0"/>
+    
+    <TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center">Number of Columns</TextBlock>
+    <NumericUpDown x:Name="ColumnsUpDown" Grid.Row="7" Grid.Column="1" Value="{Binding NumberOfColumns}" Minimum="1" FormatString="0"/>
+    
+    <TextBlock Grid.Row="8" Grid.Column="0" VerticalAlignment="Center">Column Separation</TextBlock>
+    <NumericUpDown x:Name="ColSepUpDown" Grid.Row="8" Grid.Column="1" Value="{Binding ColumnSeparation}" Minimum="0"/>
+    
+    <TextBlock Grid.Row="9" Grid.Column="0" VerticalAlignment="Center">Use Page Numbers</TextBlock>
+    <ToggleButton x:Name="UsePageNumbersButton" Grid.Row="9" Grid.Column="1" Command="{Binding ToggleUsePageNumbersCommand}">
+      <TextBlock Text="{Binding UsePageNumbers}"/>
+    </ToggleButton>
+  </Grid>
+</Window>
