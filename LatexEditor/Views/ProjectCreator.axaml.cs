@@ -31,8 +31,8 @@ public partial class ProjectCreator : Window
 	{
 		var docFormatter = new NewDocumentFormatter()
 		{
-			Width = 500,
-			Height = 400
+			Width = 600,
+			Height = 450
 		};
 		var newProjectDir = await docFormatter.ShowDialog<string>(this);
 		if (newProjectDir != null)

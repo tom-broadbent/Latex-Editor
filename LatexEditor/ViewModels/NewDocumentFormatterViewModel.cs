@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace LatexEditor.ViewModels
 {
-    public partial class NewDocumentFormatterViewModel : ViewModelBase
+    public partial class NewDocumentFormatterViewModel : ProjectCreatorViewModel
     {
         [ObservableProperty]
         private List<string> documentClasses = new List<string>()
@@ -52,12 +52,9 @@ namespace LatexEditor.ViewModels
         private float columnSeparation = 1;
 
         [ObservableProperty]
-        private bool usePageNumbers = false;
-
-        [RelayCommand]
-        private void ToggleUsePageNumbers()
+        private List<string> pageNumbering = new List<string>()
         {
-            UsePageNumbers = !UsePageNumbers;
-        }
+            "none", "arabic", "alph", "Alph", "roman", "Roman"
+        };
     }
 }

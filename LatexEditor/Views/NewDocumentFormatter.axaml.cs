@@ -5,8 +5,11 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using CommunityToolkit.Mvvm.Input;
 using LatexEditor.ViewModels;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace LatexEditor.Views;
@@ -22,16 +25,25 @@ public partial class NewDocumentFormatter : Window
         {
             DocumentClassComboBox.Items.Add(item);
         }
+        DocumentClassComboBox.SelectedIndex = 0;
 
         foreach (var item in vm.PageSizes)
         {
             PageSizeComboBox.Items.Add(item);
         }
+        PageSizeComboBox.SelectedItem = vm.PageSizes.Contains("a4paper") ? "a4paper" : vm.PageSizes.First();
 
         foreach (var item in vm.PageOrientations)
         {
             PageOrientationComboBox.Items.Add(item);
         }
+        PageOrientationComboBox.SelectedIndex = 0;
+
+        foreach (var item in vm.PageNumbering)
+        {
+            PageNumberingComboBox.Items.Add(item);
+        }
+        PageNumberingComboBox.SelectedIndex = 0;
 
         var float_updowns = new List<NumericUpDown>()
         {
@@ -49,6 +61,153 @@ public partial class NewDocumentFormatter : Window
         {
             updown.AddHandler(KeyDownEvent, UpDown_IntFormat, RoutingStrategies.Tunnel);
         });
+
+        CancelButton.Click += CancelButtonClick;
+        OkButton.Click += OkButtonClick;
+
+        var maxRow = (int?) RootGrid.Children.Select(x => x[Grid.RowProperty]).Max();
+        if (maxRow != null)
+        {
+            for (var i = 0; i <= maxRow; i++)
+            {
+                RootGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            }
+        }
+    }
+
+    private void CancelButtonClick(object? sender, EventArgs e)
+    {
+        Close();
+    }
+
+    private void OkButtonClick(object? sender, EventArgs e)
+    {
+        var vm = DataContext as NewDocumentFormatterViewModel;
+        if (vm != null)
+        {
+
+            try
+            {
+                if (DocumentClassComboBox.SelectedItem == null)
+                {
+                    throw new Exception("You must select a document class.");
+                }
+                else if (PageSizeComboBox.SelectedItem == null)
+                {
+                    throw new Exception("You must select a page size.");
+                }
+                else if (PageOrientationComboBox.SelectedItem == null)
+                {
+                    throw new Exception("You must select a page orientation.");
+                }
+                else if (vm.NumberOfColumns <= 0)
+                {
+                    throw new Exception("Number of columns cannot be less than 1.");
+                }
+                else if (vm.ProjectDirectoryPath == "...")
+                {
+                    throw new Exception("No directory selected. Please select a directory to contain the project.");
+                }
+                else if (string.IsNullOrEmpty(vm.ProjectName))
+                {
+                    throw new Exception("No project name entered. Please enter a name for the project.");
+                }
+                else
+                {
+                    var project = Path.Join(vm.ProjectDirectoryPath, vm.ProjectName);
+                    if (Directory.Exists(project))
+                    {
+                        throw new Exception($"{project} already exists. Please enter a different project name or select a different directory.");
+                    }
+                    Directory.CreateDirectory(project);
+                    if (Directory.Exists(project))
+                    {
+                        var latex = GenerateLatex();
+                        File.WriteAllText(Path.Join(project, "main.tex"), latex);
+                        Close(project);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var box = MessageBoxManager.GetMessageBoxStandard("Error", ex.Message, ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                box.ShowAsync();
+            }
+        }
+    }
+
+    private string? GenerateLatex()
+    {
+        var vm = DataContext as NewDocumentFormatterViewModel;
+        if (vm != null)
+        {
+            var latex = new List<string>();
+
+            // documentclass
+            latex.Add($"\\documentclass{{{DocumentClassComboBox.SelectedItem}}}");
+
+            // geometry
+            var geometry = $"\\usepackage[{PageSizeComboBox.SelectedItem}, {PageOrientationComboBox.SelectedItem}";
+            if (LeftMarginUpDown.Value > 0)
+            {
+                geometry += $", left={LeftMarginUpDown.Value}cm";
+            }
+            if (RightMarginUpDown.Value > 0)
+            {
+                geometry += $", right={RightMarginUpDown.Value}cm";
+            }
+            if (TopMarginUpDown.Value > 0)
+            {
+                geometry += $", top={TopMarginUpDown.Value}cm";
+            }
+            if (BottomMarginUpDown.Value > 0)
+            {
+                geometry += $", bottom={BottomMarginUpDown.Value}cm";
+            }
+            geometry += "]{geometry}";
+            latex.Add(geometry);
+
+            // page numbering
+            if (PageNumberingComboBox.SelectedValue is string pageNumberingStyle && pageNumberingStyle != "none")
+            {
+                latex.Add($"\\pagenumbering{{{pageNumberingStyle}}}");
+            }
+
+            // columns
+            if (ColumnsUpDown.Value > 1)
+            {
+                latex.Add("\\usepackage{multicol}");
+                latex.Add($"\\setlength{{\\columnsep}}{{{ColSepUpDown.Value}cm}}");
+            }
+
+            // main body
+            latex.Add("\n\\begin{document}");
+
+            if (ColumnsUpDown.Value > 1)
+            {
+                latex.Add($"\\begin{{multicols}}{{{ColumnsUpDown.Value}}}");
+                latex.Add("[");
+                latex.Add("% Header text (not affected by multicolumns)\n");
+                latex.Add("]");
+                latex.Add("% Multicolumn body");
+            }
+            else
+            {
+                latex.Add("% Main body");
+            }
+
+            latex.Add("\n\n");
+
+            if (ColumnsUpDown.Value > 1)
+            {
+                latex.Add("\\end{multicols}");
+            }
+
+            latex.Add("\\end{document}");
+
+            return string.Join("\n", latex);
+        }
+        return null;
     }
 
     private void UpDown_IntFormat(object? sender, KeyEventArgs e)

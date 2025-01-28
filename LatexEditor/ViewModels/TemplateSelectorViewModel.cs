@@ -18,21 +18,14 @@ using Avalonia.Platform;
 
 namespace LatexEditor.ViewModels
 {
-	internal partial class TemplateSelectorViewModel : ViewModelBase
+	internal partial class TemplateSelectorViewModel : ProjectCreatorViewModel
 	{
-		[ObservableProperty]
-		private string projectDirectoryPath = "...";
-		private IStorageFolder? projectDirectory;
-		
-		[ObservableProperty]
-		private string projectName = "";
-		
-		[ObservableProperty]
-		private string? selectedTemplate;
-		[ObservableProperty]
-		private string? selectedTemplateName;
-		
-		public List<Expander> Expanders => _expanders.Values.ToList();
+
+        [ObservableProperty]
+        private string? selectedTemplate;
+        [ObservableProperty]
+        private string? selectedTemplateName;
+        public List<Expander> Expanders => _expanders.Values.ToList();
 		private Dictionary<string, Expander> _expanders = new Dictionary<string, Expander>();
 		
 		private List<string> templates;
@@ -149,17 +142,6 @@ namespace LatexEditor.ViewModels
 				button.IsChecked = true;
 				SelectedTemplate = Path.GetFullPath(template);
 				SelectedTemplateName = Path.GetFileNameWithoutExtension(template);
-			}
-		}
-		
-		[RelayCommand]
-		public async Task SelectProjectDir()
-		{
-			var dir = await FsUtils.DoOpenFolderPickerAsync();
-			if (dir != null)
-			{
-				projectDirectory = dir;
-				ProjectDirectoryPath = dir.Path.LocalPath;
 			}
 		}
 	}
