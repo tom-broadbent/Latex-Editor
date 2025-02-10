@@ -35,10 +35,6 @@
         <Separator/>
         <MenuItem Header="_Exit" x:Name="menuExit"/>
       </MenuItem>
-      <MenuItem Header="_Edit">
-        <MenuItem Header="Copy"/>
-        <MenuItem Header="Paste"/>
-      </MenuItem>
       <MenuItem Header="_LaTeX">
         <MenuItem Command="{Binding CompileLatexCommand}" Header="_Compile" HotKey="F5"/>
         <MenuItem Command="{Binding PickSymbolCommand}" Header="_Symbols"/>
