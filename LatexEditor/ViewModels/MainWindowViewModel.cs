@@ -374,7 +374,6 @@ public partial class MainWindowViewModel : ViewModelBase
 							 | NotifyFilters.Security
 							 | NotifyFilters.Size;
 
-		watcher.Changed += fileSystemEvent;
 		watcher.Created += fileSystemEvent;
 		watcher.Deleted += fileSystemEvent;
 		watcher.Renamed += fileSystemEvent;
