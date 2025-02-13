@@ -63,11 +63,11 @@ public partial class MainWindowViewModel : ViewModelBase
 		OpenFileName = null;
 		openFilePath = null;
 		window.Title = Constants.ApplicationName;
-        window.ChangesMade = false;
+		window.ChangesMade = false;
 		PdfPath = null;
 		Document.Text = Text;
 
-    }
+	}
 
 	internal async Task OpenFile(IStorageFile file, CancellationToken token)
 	{
@@ -124,9 +124,9 @@ public partial class MainWindowViewModel : ViewModelBase
 			CreateNoWindow = true
 		};
 
-		ProcessStartInfo biberInfo = new ProcessStartInfo
+		ProcessStartInfo bibInfo = new ProcessStartInfo
 		{
-			FileName = "biber",
+			FileName = window.config.GetSection("Settings")["BibEngine"] ?? "biber",
 			Arguments = $"\"{Path.ChangeExtension(openFilePath, "bcf")}\"",
 			RedirectStandardOutput = true,
 			RedirectStandardError = true,
@@ -149,7 +149,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
 			using (Process process = new Process())
 			{
-				process.StartInfo = biberInfo;
+				process.StartInfo = bibInfo;
 				process.Start();
 
 				string output = process.StandardOutput.ReadToEnd();
@@ -225,9 +225,9 @@ public partial class MainWindowViewModel : ViewModelBase
 			var dir = await FsUtils.TryGetFolderFromPathAsync(newProjectPath);
 			if (dir != null)
 			{
-                var box = MessageBoxManager.GetMessageBoxStandard("New Project Created", $"New project created at {newProjectPath}", ButtonEnum.Ok);
-                await box.ShowAsync();
-                await OpenFolder(dir);
+				var box = MessageBoxManager.GetMessageBoxStandard("New Project Created", $"New project created at {newProjectPath}", ButtonEnum.Ok);
+				await box.ShowAsync();
+				await OpenFolder(dir);
 				UnloadFile();
 			}
 		}
@@ -314,8 +314,8 @@ public partial class MainWindowViewModel : ViewModelBase
 		{
 			if (item.Path != folderNode.Path)
 			{
-                ftList.Add(item);
-            }
+				ftList.Add(item);
+			}
 			else
 			{
 				ftList.Add(folderNode);
@@ -323,8 +323,8 @@ public partial class MainWindowViewModel : ViewModelBase
 		}
 		if (!ftList.Contains(folderNode))
 		{
-            ftList.Add(folderNode);
-        }
+			ftList.Add(folderNode);
+		}
 		FileTree = null;
 		FileTree = new ObservableCollection<DirectoryNode>(ftList);
 		await Dispatcher.UIThread.InvokeAsync(() =>
@@ -388,28 +388,28 @@ public partial class MainWindowViewModel : ViewModelBase
 
 	private async Task PickFolder(CancellationToken token, bool closeOpenFolders = true)
 	{
-        try
-        {
-            if (window.ChangesMade && closeOpenFolders)
-            {
-                var confirm = MessageBoxManager.GetMessageBoxStandard(
-                    "Confirm",
-                    "You have unsaved changes in the editor. Are you sure you want to open a folder? Unsaved changes will be lost.",
-                    ButtonEnum.YesNo
-                );
-                var result = await confirm.ShowWindowDialogAsync(window);
-                if (result == ButtonResult.No) return;
-            }
+		try
+		{
+			if (window.ChangesMade && closeOpenFolders)
+			{
+				var confirm = MessageBoxManager.GetMessageBoxStandard(
+					"Confirm",
+					"You have unsaved changes in the editor. Are you sure you want to open a folder? Unsaved changes will be lost.",
+					ButtonEnum.YesNo
+				);
+				var result = await confirm.ShowWindowDialogAsync(window);
+				if (result == ButtonResult.No) return;
+			}
 
-            var folder = await FsUtils.DoOpenFolderPickerAsync();
-            await OpenFolder(folder, closeOpenFolders);
-        }
-        catch (Exception e)
-        {
-            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
-            box.ShowAsync();
-        }
-    }
+			var folder = await FsUtils.DoOpenFolderPickerAsync();
+			await OpenFolder(folder, closeOpenFolders);
+		}
+		catch (Exception e)
+		{
+			var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+			box.ShowAsync();
+		}
+	}
 
 	[RelayCommand]
 	private async Task PickFolderClearTree(CancellationToken token)
@@ -641,23 +641,23 @@ public partial class MainWindowViewModel : ViewModelBase
 				{
 					var path = selected.Path.LocalPath;
 
-                    var confirm = MessageBoxManager.GetMessageBoxStandard(
-                        "Confirm",
-                        "You have unsaved changes in the editor. In order to rename this file, the file in the editor must be closed.\nDo you want to continue? Your changes will be lost.",
-                        ButtonEnum.YesNo
-                    );
+					var confirm = MessageBoxManager.GetMessageBoxStandard(
+						"Confirm",
+						"You have unsaved changes in the editor. In order to rename this file, the file in the editor must be closed.\nDo you want to continue? Your changes will be lost.",
+						ButtonEnum.YesNo
+					);
 
-                    if (selected.SubNodes == null) // if it's a file
+					if (selected.SubNodes == null) // if it's a file
 					{
 						if (selected.Path.LocalPath == openFilePath) // close open file if it's the one being renamed
 						{
-                            if (window.ChangesMade)
-                            {
-                                var confirmResult = await confirm.ShowWindowDialogAsync(window);
-                                if (confirmResult == ButtonResult.No) return;
-                            }
+							if (window.ChangesMade)
+							{
+								var confirmResult = await confirm.ShowWindowDialogAsync(window);
+								if (confirmResult == ButtonResult.No) return;
+							}
 
-                            UnloadFile();
+							UnloadFile();
 						}
 						File.Move(path, Path.Join(Path.GetDirectoryName(path), result));
 					}
@@ -665,13 +665,13 @@ public partial class MainWindowViewModel : ViewModelBase
 					{
 						if (selected.SearchDescendants(x => x.Path.LocalPath == openFilePath) != null) // close open file if it is contained in the folder being renamed
 						{
-                            if (window.ChangesMade)
-                            {
-                                var confirmResult = await confirm.ShowWindowDialogAsync(window);
-                                if (confirmResult == ButtonResult.No) return;
-                            }
+							if (window.ChangesMade)
+							{
+								var confirmResult = await confirm.ShowWindowDialogAsync(window);
+								if (confirmResult == ButtonResult.No) return;
+							}
 
-                            UnloadFile();
+							UnloadFile();
 						}
 						var newPath = Path.Join(Path.GetDirectoryName(path), result);
 						Directory.Move(path, newPath);

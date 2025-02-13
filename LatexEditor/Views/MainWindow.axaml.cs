@@ -7,6 +7,7 @@ using System.Threading;
 using TextMateSharp.Grammars;
 using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
+using Microsoft.Extensions.Configuration;
 
 namespace LatexEditor.Views;
 
@@ -16,6 +17,7 @@ public partial class MainWindow : Window
 	private CompletionWindow completionWindow;
 	private OverloadInsightWindow insightWindow;
 	public TextMate.Installation TextMate;
+	public IConfiguration config;
 
 	public MainWindow()
 	{
@@ -31,6 +33,10 @@ public partial class MainWindow : Window
 		Closing += OnClose;
 
 		LatexCompletionDataLoader.LoadFromDirectory("Completion");
+
+		config = new ConfigurationBuilder()
+			.AddJsonFile("appsettings.json")
+			.Build();
 	}
 
 	private void Binding(object? sender, Avalonia.Input.KeyEventArgs e)
