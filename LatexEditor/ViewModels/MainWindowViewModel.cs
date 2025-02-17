@@ -100,6 +100,18 @@ public partial class MainWindowViewModel : ViewModelBase
 	}
 
 	[RelayCommand]
+	private async Task OpenOptionsMenu()
+	{
+		var optionsMenu = new OptionsMenu()
+		{
+			Width = 800,
+			Height = 300
+		};
+
+		await optionsMenu.ShowDialog(window);
+	}
+
+	[RelayCommand]
 	private async Task CompileLatex()
 	{
 		PdfPath = null;
@@ -126,7 +138,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
 		ProcessStartInfo bibInfo = new ProcessStartInfo
 		{
-			FileName = window.config.GetSection("Settings")["BibEngine"] ?? "biber",
+			FileName = window.config?.Settings.BibBackend ?? "biber",
 			Arguments = $"\"{Path.ChangeExtension(openFilePath, "bcf")}\"",
 			RedirectStandardOutput = true,
 			RedirectStandardError = true,

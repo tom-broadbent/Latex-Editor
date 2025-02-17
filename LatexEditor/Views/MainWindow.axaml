@@ -38,6 +38,7 @@
       <MenuItem Header="_LaTeX">
         <MenuItem Command="{Binding CompileLatexCommand}" Header="_Compile" HotKey="F5"/>
         <MenuItem Command="{Binding PickSymbolCommand}" Header="_Symbols"/>
+        <MenuItem Command="{Binding OpenOptionsMenuCommand}" Header="_Options"/>
       </MenuItem>
     </Menu>
 

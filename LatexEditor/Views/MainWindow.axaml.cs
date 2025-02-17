@@ -8,6 +8,9 @@ using TextMateSharp.Grammars;
 using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using System.Text.Json.Nodes;
+using System.IO;
 
 namespace LatexEditor.Views;
 
@@ -17,7 +20,7 @@ public partial class MainWindow : Window
 	private CompletionWindow completionWindow;
 	private OverloadInsightWindow insightWindow;
 	public TextMate.Installation TextMate;
-	public IConfiguration config;
+	public dynamic? config;
 
 	public MainWindow()
 	{
@@ -34,9 +37,8 @@ public partial class MainWindow : Window
 
 		LatexCompletionDataLoader.LoadFromDirectory("Completion");
 
-		config = new ConfigurationBuilder()
-			.AddJsonFile("appsettings.json")
-			.Build();
+		var json = File.ReadAllText("appsettings.json");
+		config = JsonConvert.DeserializeObject(json);
 	}
 
 	private void Binding(object? sender, Avalonia.Input.KeyEventArgs e)
