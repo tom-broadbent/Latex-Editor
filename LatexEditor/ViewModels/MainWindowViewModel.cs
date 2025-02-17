@@ -138,7 +138,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
 		ProcessStartInfo bibInfo = new ProcessStartInfo
 		{
-			FileName = window.config?.Settings.BibBackend ?? "biber",
+			FileName = window.config?.BibBackend ?? "biber",
 			Arguments = $"\"{Path.ChangeExtension(openFilePath, "bcf")}\"",
 			RedirectStandardOutput = true,
 			RedirectStandardError = true,

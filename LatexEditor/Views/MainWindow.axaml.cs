@@ -20,7 +20,7 @@ public partial class MainWindow : Window
 	private CompletionWindow completionWindow;
 	private OverloadInsightWindow insightWindow;
 	public TextMate.Installation TextMate;
-	public dynamic? config;
+	public AppSettings? config;
 
 	public MainWindow()
 	{
@@ -38,7 +38,7 @@ public partial class MainWindow : Window
 		LatexCompletionDataLoader.LoadFromDirectory("Completion");
 
 		var json = File.ReadAllText("appsettings.json");
-		config = JsonConvert.DeserializeObject(json);
+		config = JsonConvert.DeserializeObject<AppSettings>(json);
 	}
 
 	private void Binding(object? sender, Avalonia.Input.KeyEventArgs e)

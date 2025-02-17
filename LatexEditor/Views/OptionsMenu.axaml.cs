@@ -28,7 +28,7 @@ public partial class OptionsMenu : Window
 
         if (mainWindow != null)
         {
-            BibBackendCombo.SelectedItem = mainWindow.config?.Settings.BibBackend ?? "biber";
+            BibBackendCombo.SelectedItem = mainWindow.config?.BibBackend ?? "biber";
         }
 
         CancelButton.Click += CancelButtonClick;
@@ -44,7 +44,7 @@ public partial class OptionsMenu : Window
     {
         if (mainWindow != null)
         {
-            mainWindow.config?.Settings.BibBackend = (string?) BibBackendCombo.SelectedItem ?? "biber";
+            mainWindow.config.BibBackend = (string?) BibBackendCombo.SelectedItem ?? "biber";
 
             var json = JsonConvert.SerializeObject(mainWindow.config);
             File.WriteAllText("appsettings.json", json);
