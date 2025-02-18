@@ -10,7 +10,7 @@
 
   <Grid ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto">
     <Grid ColumnDefinitions="Auto, Auto" Grid.Row="0">
-      <TextBlock Text="Bibliography Backend" Grid.Column="0"/>
+      <TextBlock Text="Bibliography Backend" VerticalAlignment="Center" Grid.Column="0"/>
       <ComboBox x:Name="BibBackendCombo" Grid.Column="1"/>
     </Grid>
     <Grid ColumnDefinitions="Auto, Auto" Grid.Row="1">
