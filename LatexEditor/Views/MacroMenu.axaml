@@ -1,0 +1,36 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:LatexEditor.ViewModels"
+        xmlns:avmath="clr-namespace:AvaloniaMath.Controls;assembly=AvaloniaMath"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="LatexEditor.MacroMenu"
+        x:DataType="vm:MacroMenuViewModel"
+        Title="MacroMenu">
+  <Grid x:Name="Grid" ColumnDefinitions="*" RowDefinitions="*, Auto, Auto">
+
+    <DataGrid x:Name="MacroGrid" Grid.Row="0" ItemsSource="{Binding Macros, Mode=TwoWay}" CanUserResizeColumns="True" GridLinesVisibility="All">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Name"  Binding="{Binding Name, Mode=TwoWay}"/>
+        <DataGridTextColumn Header="Latex" Binding="{Binding Latex, Mode=TwoWay}"/>
+        <DataGridTextColumn Header="Command Name" Binding="{Binding CommandName, Mode=TwoWay}"/>
+        <DataGridTemplateColumn Header="Preview">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <avmath:FormulaBlock Formula="{Binding Latex, Mode=OneWay}" VerticalAlignment="Center"/>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+      </DataGrid.Columns>
+    </DataGrid>
+
+    <Button Grid.Row="1" VerticalAlignment="Top" Command="{Binding NewMacroCommand}">+</Button>
+
+    <Grid Grid.Row="2" ColumnDefinitions="Auto, Auto" VerticalAlignment="Bottom">
+      <Button x:Name="CancelButton" Grid.Column="0">Cancel</Button>
+      <Button x:Name="OkButton" Grid.Column="1">Ok</Button>
+    </Grid>
+    
+  </Grid>
+</Window>

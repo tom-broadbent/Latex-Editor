@@ -111,7 +111,19 @@ public partial class MainWindowViewModel : ViewModelBase
 		await optionsMenu.ShowDialog(window);
 	}
 
-	[RelayCommand]
+    [RelayCommand]
+    private async Task OpenMacroMenu()
+    {
+        var macroMenu = new MacroMenu()
+        {
+            Width = 900,
+            Height = 400
+        };
+
+        await macroMenu.ShowDialog(window);
+    }
+
+    [RelayCommand]
 	private async Task CompileLatex()
 	{
 		PdfPath = null;

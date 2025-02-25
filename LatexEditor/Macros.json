@@ -1,0 +1,7 @@
+[
+  {
+    "Name": "Schrödinger equation",
+    "Latex": "i \\hbar \\frac{d}{dt} | \\Psi \\rangle = \\hat{H} | \\Psi \\rangle",
+    "CommandName": "schreq"
+  }
+]
