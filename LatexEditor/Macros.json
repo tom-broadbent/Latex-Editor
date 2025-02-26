@@ -3,5 +3,10 @@
     "Name": "Schrödinger equation",
     "Latex": "i \\hbar \\frac{d}{dt} | \\Psi \\rangle = \\hat{H} | \\Psi \\rangle",
     "CommandName": "schreq"
+  },
+  {
+    "Name": "Bra-Ket Notation",
+    "Latex": "\\left \\langle #1 \\middle| #2 \\right \\rangle",
+    "CommandName": "braket"
   }
 ]

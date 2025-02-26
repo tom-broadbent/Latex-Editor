@@ -71,7 +71,7 @@
 
   <ItemGroup>
     <None Update="Macros.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

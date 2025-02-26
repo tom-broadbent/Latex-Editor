@@ -7,10 +7,18 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="LatexEditor.MacroMenu"
         x:DataType="vm:MacroMenuViewModel"
-        Title="MacroMenu">
+        Title="Macros">
   <Grid x:Name="Grid" ColumnDefinitions="*" RowDefinitions="*, Auto, Auto">
 
     <DataGrid x:Name="MacroGrid" Grid.Row="0" ItemsSource="{Binding Macros, Mode=TwoWay}" CanUserResizeColumns="True" GridLinesVisibility="All">
+      <DataGrid.ContextMenu>
+        <ContextMenu>
+          <MenuItem x:Name="AddButton" Header="Add macro to document"/>
+          <MenuItem x:Name="InsertButton" Header="Insert raw LaTeX"/>
+          <MenuItem x:Name="DuplicateButton" Header="Duplicate"/>
+          <MenuItem x:Name="DeleteButton" Header="Delete"/>
+        </ContextMenu>
+      </DataGrid.ContextMenu>
       <DataGrid.Columns>
         <DataGridTextColumn Header="Name"  Binding="{Binding Name, Mode=TwoWay}"/>
         <DataGridTextColumn Header="Latex" Binding="{Binding Latex, Mode=TwoWay}"/>
