@@ -13,7 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Subjects;
 
-namespace LatexEditor;
+namespace LatexEditor.Views;
 
 public partial class MacroMenu : Window
 {
