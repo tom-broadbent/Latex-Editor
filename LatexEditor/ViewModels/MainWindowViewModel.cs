@@ -160,38 +160,40 @@ public partial class MainWindowViewModel : ViewModelBase
 
 		try
 		{
-			using (Process process = new Process())
-			{
-				process.StartInfo = pdflatexInfo;
-				process.Start();
+			await Task.Run(() => {
+                using (Process process = new Process())
+                {
+                    process.StartInfo = pdflatexInfo;
+                    process.Start();
 
-				string output = process.StandardOutput.ReadToEnd();
-				string errors = process.StandardError.ReadToEnd();
+                    string output = process.StandardOutput.ReadToEnd();
+                    string errors = process.StandardError.ReadToEnd();
 
-				process.WaitForExit();
-			}
+                    process.WaitForExit();
+                }
 
-			using (Process process = new Process())
-			{
-				process.StartInfo = bibInfo;
-				process.Start();
+                using (Process process = new Process())
+                {
+                    process.StartInfo = bibInfo;
+                    process.Start();
 
-				string output = process.StandardOutput.ReadToEnd();
-				string errors = process.StandardError.ReadToEnd();
+                    string output = process.StandardOutput.ReadToEnd();
+                    string errors = process.StandardError.ReadToEnd();
 
-				process.WaitForExit();
-			}
+                    process.WaitForExit();
+                }
 
-			using (Process process = new Process())
-			{
-				process.StartInfo = pdflatexInfo;
-				process.Start();
+                using (Process process = new Process())
+                {
+                    process.StartInfo = pdflatexInfo;
+                    process.Start();
 
-				string output = process.StandardOutput.ReadToEnd();
-				string errors = process.StandardError.ReadToEnd();
+                    string output = process.StandardOutput.ReadToEnd();
+                    string errors = process.StandardError.ReadToEnd();
 
-				process.WaitForExit();
-			}
+                    process.WaitForExit();
+                }
+            });
 		}
 		catch (Exception e)
 		{
