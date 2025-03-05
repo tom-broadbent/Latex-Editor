@@ -20,6 +20,10 @@ using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using System.Collections.Generic;
+using AvaloniaPdfViewer;
+using System.Reflection;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 
 namespace LatexEditor.ViewModels;
 
@@ -127,8 +131,16 @@ public partial class MainWindowViewModel : ViewModelBase
 	private async Task CompileLatex()
 	{
 		PdfPath = null;
+		var compilingImage = new Bitmap(AssetLoader.Open(new Uri("avares://LatexEditor/Assets/Compiling.png")));
+        var imageInfo = typeof(PdfViewer).GetField("MainImage", BindingFlags.NonPublic | BindingFlags.Instance);
+		Image? original = imageInfo?.GetValue(window.pdfViewer) as Image;
+		if (original != null)
+		{
+			original.Source = compilingImage;
+			imageInfo.SetValue(window.pdfViewer, original);
+		}
 
-		if (openFilePath == null)
+        if (openFilePath == null)
 		{
 		   await SaveAsFile();
 		}
