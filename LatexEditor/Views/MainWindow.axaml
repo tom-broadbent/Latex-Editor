@@ -26,17 +26,17 @@
 
     <Menu Grid.Row="0" Grid.ColumnSpan="4">
       <MenuItem Header="_File">
-        <MenuItem Command="{Binding NewProjectCommand}" Header="_New Project" HotKey="Ctrl+N"/>
-        <MenuItem Command="{Binding SelectFileCommand}" Header="_Open File" HotKey="Ctrl+O"/>
-        <MenuItem Command="{Binding PickFolderClearTreeCommand}" Header="_Open Folder"/>
-        <MenuItem Command="{Binding PickFolderAddToTreeCommand}" Header="_Open Additional Folder"/>
-        <MenuItem Command="{Binding SaveFileCommand}" Header="_Save" HotKey="Ctrl+S"/>
-        <MenuItem Command="{Binding SaveAsFileCommand}" Header="_Save As" HotKey="Ctrl+Shift+S"/>
+        <MenuItem Command="{Binding NewProjectCommand}" Header="_New Project" InputGesture="Ctrl+N"/>
+        <MenuItem Command="{Binding SelectFileCommand}" Header="_Open File" InputGesture="Ctrl+O"/>
+        <MenuItem Command="{Binding PickFolderClearTreeCommand}" Header="_Open Folder" InputGesture="Ctrl+Shift+O"/>
+        <MenuItem Command="{Binding PickFolderAddToTreeCommand}" Header="_Open Additional Folder" InputGesture="Ctrl+Alt+O"/>
+        <MenuItem Command="{Binding SaveFileCommand}" Header="_Save" InputGesture="Ctrl+S"/>
+        <MenuItem Command="{Binding SaveAsFileCommand}" Header="_Save As" InputGesture="Ctrl+Shift+S"/>
         <Separator/>
         <MenuItem Header="_Exit" x:Name="menuExit"/>
       </MenuItem>
       <MenuItem Header="_LaTeX">
-        <MenuItem Command="{Binding CompileLatexCommand}" Header="_Compile" HotKey="F5"/>
+        <MenuItem Command="{Binding CompileLatexCommand}" Header="_Compile" InputGesture="F5"/>
         <MenuItem Command="{Binding PickSymbolCommand}" Header="_Symbols"/>
         <MenuItem Command="{Binding OpenOptionsMenuCommand}" Header="_Options"/>
         <MenuItem Command="{Binding OpenMacroMenuCommand}" Header="_Macros"/>
@@ -66,4 +66,14 @@
     <TextBlock Grid.Row="2" Grid.Column="4" Text="{Binding PdfPath}"></TextBlock>
     
   </Grid>
+
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Ctrl+N" Command="{Binding NewProjectCommand}"/>
+    <KeyBinding Gesture="Ctrl+O" Command="{Binding SelectFileCommand}"/>
+    <KeyBinding Gesture="Ctrl+Shift+O" Command="{Binding PickFolderClearTreeCommand}"/>
+    <KeyBinding Gesture="Ctrl+Alt+O" Command="{Binding PickFolderAddToTreeCommand}"/>
+    <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveFileCommand}"/>
+    <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveAsFileCommand}"/>
+    <KeyBinding Gesture="F5" Command="{Binding CompileLatexCommand}"/>
+  </Window.KeyBindings>
 </Window>
