@@ -422,6 +422,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		watchers.Add(watcher);
 
 		await FileTreeLoad(folder, closeOpenFolders);
+		SetNewFileText();
 	}
 
 	private async Task PickFolder(CancellationToken token, bool closeOpenFolders = true)
