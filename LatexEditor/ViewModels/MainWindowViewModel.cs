@@ -24,6 +24,7 @@ using AvaloniaPdfViewer;
 using System.Reflection;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using XamlMath.Boxes;
 
 namespace LatexEditor.ViewModels;
 
@@ -216,6 +217,14 @@ public partial class MainWindowViewModel : ViewModelBase
 			}
 			box.ShowAsync();
 		}
+
+		var logpath = Path.ChangeExtension(openFilePath, ".log");
+        var logtext = File.ReadAllText(logpath);
+		if (logtext != null && logtext.Contains("no output PDF file produced!"))
+		{
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", $"An error occurred and no PDF file was generated. Check {Path.GetFileName(logpath)} for details", ButtonEnum.Ok, Icon.Error);
+			box.ShowAsync();
+        }
 		
 
 		PdfPath = Path.ChangeExtension(openFilePath, ".pdf");
