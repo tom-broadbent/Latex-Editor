@@ -299,6 +299,39 @@ public partial class MainWindowViewModel : ViewModelBase
 		}
 	}
 
+	[RelayCommand]
+	private async Task InsertImage(CancellationToken token)
+	{
+		try
+		{
+			var file = await FsUtils.DoOpenFilePickerAsync();
+			if (file is null) throw new FileNotFoundException();
+			var path = file.Path.LocalPath;
+
+			if (OperatingSystem.IsWindows())
+			{
+				var split = path.Split(Path.DirectorySeparatorChar);
+				path = string.Join('/', split);
+			}
+
+			var text =	"\\begin{figure}[H]\n" +
+						"	\\centering\n" +
+						$"	\\includegraphics{{{path}}}\n" +
+						"	\\caption{Your caption here}\n" +
+						"\\end{figure}\n";
+
+            var doc = window.textEditor.Document;
+            var offset = window.textEditor.CaretOffset;
+            doc.Insert(offset, text);
+            window.SetChangeMarker();
+        }
+		catch (Exception e)
+		{
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+            box.ShowAsync();
+        }
+    }
+
 	internal async Task<DirectoryNode> LoadFolder(IStorageFolder folder)
 	{
 		try

@@ -17,7 +17,7 @@ public static class FsUtils
 
 		var files = await provider.OpenFilePickerAsync(new FilePickerOpenOptions()
 		{
-			Title = "Open Text File",
+			Title = "Open File",
 			AllowMultiple = false
 		});
 		return files?.Count >= 1 ? files[0] : null;
