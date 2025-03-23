@@ -32,9 +32,6 @@
         <MenuItem Command="{Binding PickFolderAddToTreeCommand}" Header="_Open Additional Folder" InputGesture="Ctrl+Alt+O"/>
         <MenuItem Command="{Binding SaveFileCommand}" Header="_Save" InputGesture="Ctrl+S"/>
         <MenuItem Command="{Binding SaveAsFileCommand}" Header="_Save As" InputGesture="Ctrl+Shift+S"/>
-        <MenuItem Header="_Insert">
-          <MenuItem Command="{Binding InsertImageCommand}" Header="Image"/>
-        </MenuItem>
         <Separator/>
         <MenuItem Header="_Exit" x:Name="menuExit"/>
       </MenuItem>
@@ -43,6 +40,10 @@
         <MenuItem Command="{Binding PickSymbolCommand}" Header="_Symbols"/>
         <MenuItem Command="{Binding OpenOptionsMenuCommand}" Header="_Options"/>
         <MenuItem Command="{Binding OpenMacroMenuCommand}" Header="_Macros"/>
+        <MenuItem Header="_Insert">
+          <MenuItem Command="{Binding InsertImageCommand}" Header="Image"/>
+          <MenuItem Command="{Binding CreateGridCommand}" Header="Grid"/>
+        </MenuItem>
       </MenuItem>
     </Menu>
 

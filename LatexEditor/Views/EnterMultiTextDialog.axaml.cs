@@ -11,7 +11,7 @@ namespace LatexEditor.Views;
 public partial class EnterMultiTextDialog : Window
 {
     private List<TextBox> textBoxes = new();
-    public EnterMultiTextDialog(int textBoxCount = 1)
+    public EnterMultiTextDialog(EnterMultiTextDialogViewModel vm, int textBoxCount = 1)
     {
         if( textBoxCount < 1)
         {
@@ -19,7 +19,7 @@ public partial class EnterMultiTextDialog : Window
         }
 
         InitializeComponent();
-        var vm = DataContext as EnterMultiTextDialogViewModel;
+        DataContext = vm;
 
         CancelButton.Click += CancelButton_Click;
         OkButton.Click += OkButton_Click;
@@ -30,8 +30,8 @@ public partial class EnterMultiTextDialog : Window
         {
             var textBox = new TextBox()
             {
-                Watermark = vm.TextBoxWatermarks.Count >= i ? vm.TextBoxWatermarks[i] : null,
-                Text = vm.TextBoxDefaultTexts.Count >= i ? vm.TextBoxDefaultTexts[i] : null,
+                Watermark = vm.TextBoxWatermarks.Count > i ? vm.TextBoxWatermarks[i] : null,
+                Text = vm.TextBoxDefaultTexts.Count > i ? vm.TextBoxDefaultTexts[i] : null,
                 [Grid.RowProperty] = i,
                 [Grid.ColumnSpanProperty] = 2,
             };
@@ -42,7 +42,6 @@ public partial class EnterMultiTextDialog : Window
         }
 
         CancelButton[Grid.RowProperty] = MainGrid.RowDefinitions.Count;
-        MainGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
         OkButton[Grid.RowProperty] = MainGrid.RowDefinitions.Count;
         MainGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
     }
@@ -54,6 +53,6 @@ public partial class EnterMultiTextDialog : Window
 
     private void OkButton_Click(object? sender, EventArgs e)
     {
-        Close(textBoxes.Select(box => box.Text));
+        Close(textBoxes.Select(box => box.Text).ToList());
     }
 }

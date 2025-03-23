@@ -128,6 +128,78 @@ public partial class MainWindowViewModel : ViewModelBase
         await macroMenu.ShowDialog(window);
     }
 
+	[RelayCommand]
+	private async Task CreateGrid()
+	{
+		var vm = new EnterMultiTextDialogViewModel()
+		{
+			TextBoxWatermarks = { "Number of columns", "Number of rows" }
+		};
+
+        var menu = new EnterMultiTextDialog(vm, 2)
+		{
+			Title = "Grid Dimensions",
+			Width = 300,
+			Height = 100
+		};
+
+		var output = await menu.ShowDialog<List<string>>(window);
+		if (output != null)
+		{
+			int width;
+			int height;
+			try
+			{
+				width = int.Parse(output[0]);
+			}
+			catch
+			{
+				width = 0;
+			}
+			try
+			{
+                height = int.Parse(output[1]);
+            }
+			catch
+			{
+				height = 0;
+			}
+
+			var latexString = "\\begin{center}\n" +
+							  "\\begin{tabular}{|c";
+			if (width > 1) {
+				for (int i = 0; i < width-1; i++)
+				{
+					latexString += " | c";
+				}
+			}
+			latexString += "|}\n";
+			for (var row = 0; row < height; row++)
+			{
+				latexString += "	\\hline\n";
+				latexString += "	";
+				for (var column = 0; column < width; column++)
+				{
+					latexString += $"cell{column + row * width}";
+					if (column < width - 1)
+					{
+						latexString += " & ";
+					}
+                }
+                latexString += " \\\\";
+                latexString += "\n";
+            }
+			latexString += "	\\hline\n";
+            latexString += "\\end{tabular}\n";
+            latexString += "\\end{center}";
+
+            var doc = window.textEditor.Document;
+			var offset = window.textEditor.CaretOffset;
+			doc.Insert(offset, latexString);
+			window.SetChangeMarker();
+		}
+    }
+
     [RelayCommand]
 	private async Task CompileLatex()
 	{
