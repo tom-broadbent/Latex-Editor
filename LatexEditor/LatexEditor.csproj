@@ -76,4 +76,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Views\EnterMultiTextDialog.axaml" />
+  </ItemGroup>
+
 </Project>
