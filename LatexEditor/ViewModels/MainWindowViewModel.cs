@@ -129,7 +129,7 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
 	[RelayCommand]
-	private async Task CreateGrid()
+	private async Task CreateTable()
 	{
 		var vm = new EnterMultiTextDialogViewModel()
 		{
@@ -138,7 +138,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         var menu = new EnterMultiTextDialog(vm, 2)
 		{
-			Title = "Grid Dimensions",
+			Title = "Table Dimensions",
 			Width = 300,
 			Height = 100
 		};
@@ -386,25 +386,27 @@ public partial class MainWindowViewModel : ViewModelBase
 		try
 		{
 			var file = await FsUtils.DoOpenFilePickerAsync();
-			if (file is null) throw new FileNotFoundException();
-			var path = file.Path.LocalPath;
-
-			if (OperatingSystem.IsWindows())
+			if (file is not null)
 			{
-				var split = path.Split(Path.DirectorySeparatorChar);
-				path = string.Join('/', split);
+				var path = file.Path.LocalPath;
+
+				if (OperatingSystem.IsWindows())
+				{
+					var split = path.Split(Path.DirectorySeparatorChar);
+					path = string.Join('/', split);
+				}
+
+				var text = "\\begin{figure}[H]\n" +
+							"	\\centering\n" +
+							$"	\\includegraphics{{{path}}}\n" +
+							"	\\caption{Your caption here}\n" +
+							"\\end{figure}";
+
+				var doc = window.textEditor.Document;
+				var offset = window.textEditor.CaretOffset;
+				doc.Insert(offset, text);
+				window.SetChangeMarker();
 			}
-
-			var text =	"\\begin{figure}[H]\n" +
-						"	\\centering\n" +
-						$"	\\includegraphics{{{path}}}\n" +
-						"	\\caption{Your caption here}\n" +
-						"\\end{figure}\n";
-
-            var doc = window.textEditor.Document;
-            var offset = window.textEditor.CaretOffset;
-            doc.Insert(offset, text);
-            window.SetChangeMarker();
         }
 		catch (Exception e)
 		{

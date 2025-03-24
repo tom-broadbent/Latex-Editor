@@ -42,7 +42,7 @@
         <MenuItem Command="{Binding OpenMacroMenuCommand}" Header="_Macros"/>
         <MenuItem Header="_Insert">
           <MenuItem Command="{Binding InsertImageCommand}" Header="Image"/>
-          <MenuItem Command="{Binding CreateGridCommand}" Header="Grid"/>
+          <MenuItem Command="{Binding CreateTableCommand}" Header="Table"/>
         </MenuItem>
       </MenuItem>
     </Menu>
