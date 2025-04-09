@@ -26,6 +26,16 @@ namespace LatexEditor
                     },
                     new MenuItem()
                     {
+                        Header = "Copy",
+                        Command = _viewModel.FileTreeCopyCommand
+                    },
+                    new MenuItem()
+                    {
+                        Header = "Paste",
+                        Command = _viewModel.FileTreePasteCommand
+                    },
+                    new MenuItem()
+                    {
                         Header = "Rename",
                         Command = _viewModel.FileTreeRenameCommand
                     },

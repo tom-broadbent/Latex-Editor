@@ -24,7 +24,6 @@ using AvaloniaPdfViewer;
 using System.Reflection;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using XamlMath.Boxes;
 
 namespace LatexEditor.ViewModels;
 
@@ -60,6 +59,8 @@ public partial class MainWindowViewModel : ViewModelBase
 	private static MainWindow? window => ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime).MainWindow as MainWindow;
 	private SymbolPickerViewModel symbolPickerViewModel = new SymbolPickerViewModel();
 	private bool multipleOpenFolders = false;
+
+	private string? copiedPath;
 
 	private void UnloadFile()
 	{
@@ -165,7 +166,8 @@ public partial class MainWindowViewModel : ViewModelBase
 				height = 0;
 			}
 
-			var latexString = "\\begin{center}\n" +
+			var latexString = "\\begin{table}[H]\n" +
+							  "\\begin{center}\n" +
 							  "\\begin{tabular}{|c";
 			if (width > 1) {
 				for (int i = 0; i < width-1; i++)
@@ -191,7 +193,9 @@ public partial class MainWindowViewModel : ViewModelBase
             }
 			latexString += "	\\hline\n";
             latexString += "\\end{tabular}\n";
-            latexString += "\\end{center}";
+            latexString += "\\end{center}\n";
+			latexString += "\\caption{Your caption here}\n";
+            latexString += "\\end{table}";
 
             var doc = window.textEditor.Document;
 			var offset = window.textEditor.CaretOffset;
@@ -711,6 +715,96 @@ public partial class MainWindowViewModel : ViewModelBase
 	}
 
 	[RelayCommand]
+	private async void FileTreeCopy()
+	{
+		try
+		{
+            var selected = window.fileTreeView.SelectedItem as DirectoryNode;
+			if (selected != null)
+			{
+                copiedPath = selected.Path.LocalPath;
+            }
+        }
+        catch (Exception e)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+            box.ShowAsync();
+        }
+    }
+
+    [RelayCommand]
+    private async void FileTreePaste()
+    {
+        try
+        {
+            var selected = window.fileTreeView.SelectedItem as DirectoryNode;
+            if (selected != null && copiedPath != null)
+            {
+				var filename = Path.GetFileName(copiedPath);
+                DirectoryNode newNode = null;
+
+                var box = MessageBoxManager.GetMessageBoxStandard(
+                        "Confirm",
+                        $"Are you sure you want to delete {selected.Title}? This action cannot be undone.",
+                        ButtonEnum.YesNo);
+
+                if (selected.SubNodes is null)
+                {
+                    var path = Path.Join(selected.Parent.Path.LocalPath, filename);
+					if (Path.Exists(path))
+					{
+						var result = await box.ShowAsync();
+						if (result == ButtonResult.No)
+						{
+							return;
+						}
+                    }
+					var attr = File.GetAttributes(copiedPath);
+					if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+					{
+						FsUtils.CopyDirectory(copiedPath, path, true);
+					}
+					else
+					{
+                        File.Copy(copiedPath, path, true);
+                    }
+                    newNode = new DirectoryNode(filename, new Uri(path), selected.Parent);
+                    selected.Parent.SubNodes.Add(newNode);
+                }
+
+                else
+                {
+                    var path = Path.Join(selected.Path.LocalPath, filename);
+                    if (Path.Exists(path))
+                    {
+                        var result = await box.ShowAsync();
+                        if (result == ButtonResult.No)
+                        {
+                            return;
+                        }
+                    }
+                    var attr = File.GetAttributes(copiedPath);
+                    if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+                    {
+                        FsUtils.CopyDirectory(copiedPath, path, true);
+                    }
+                    else
+                    {
+                        File.Copy(copiedPath, path, true);
+                    }
+                    newNode = new DirectoryNode(filename, new Uri(path), selected);
+                    selected.SubNodes.Add(newNode);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+            box.ShowAsync();
+        }
+    }
+
+    [RelayCommand]
 	private async void FileTreeDelete()
 	{
 		try
