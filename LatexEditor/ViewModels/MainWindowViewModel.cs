@@ -627,43 +627,65 @@ public partial class MainWindowViewModel : ViewModelBase
 	[RelayCommand]
 	private async Task NewFileDialog()
 	{
-		var dialogViewModel = new EnterTextDialogViewModel()
+		try
 		{
-			TextBoxWatermark = "File name"
-		};
-		var dialog = new EnterTextDialog()
-		{
-			Width=300,
-			Height=64,
-			Title="Create new file",
-			DataContext=dialogViewModel
-		};
-		var filename = await dialog.ShowDialog<string>(window);
-
-		if (!string.IsNullOrEmpty(filename))
-		{
-			var selected = window.fileTreeView.SelectedItem as DirectoryNode;
-			if (selected != null)
+			var dialogViewModel = new EnterTextDialogViewModel()
 			{
-				DirectoryNode newNode = null;
-				if (selected.SubNodes is null)
-				{
-					var path = Path.Join(selected.Parent.Path.LocalPath, filename);
-					File.Create(path).Close();
-					newNode = new DirectoryNode(filename, new Uri(path), selected.Parent);
-					selected.Parent.SubNodes.Add(newNode);
-				}
+				TextBoxWatermark = "File name"
+			};
+			var dialog = new EnterTextDialog()
+			{
+				Width = 300,
+				Height = 64,
+				Title = "Create new file",
+				DataContext = dialogViewModel
+			};
+			var filename = await dialog.ShowDialog<string>(window);
 
-				else
+			if (!string.IsNullOrEmpty(filename))
+			{
+				var selected = window.fileTreeView.SelectedItem as DirectoryNode;
+				if (selected != null)
 				{
-					var path = Path.Join(selected.Path.LocalPath, filename);
-					File.Create(path).Close();
-					newNode = new DirectoryNode(filename, new Uri(path), selected);
-					selected.SubNodes.Add(newNode);
+					DirectoryNode newNode = null;
+					if (selected.SubNodes is null)
+					{
+						var path = Path.Join(selected.Parent.Path.LocalPath, filename);
+						if (!Path.Exists(path))
+						{
+							File.Create(path).Close();
+							newNode = new DirectoryNode(filename, new Uri(path), selected.Parent);
+							selected.Parent.SubNodes.Add(newNode);
+						}
+						else
+						{
+							throw new Exception($"{path} already exists");
+						}
+					}
+
+					else
+					{
+						var path = Path.Join(selected.Path.LocalPath, filename);
+						if (!Path.Exists(path))
+						{
+							File.Create(path).Close();
+							newNode = new DirectoryNode(filename, new Uri(path), selected);
+							selected.SubNodes.Add(newNode);
+						}
+                        else
+                        {
+                            throw new Exception($"{path} already exists");
+                        }
+                    }
 				}
 			}
 		}
-	}
+        catch (Exception e)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", e.ToString(), ButtonEnum.Ok, Icon.Error);
+            box.ShowAsync();
+        }
+    }
 
 	[RelayCommand]
 	private async Task NewFolderDialog()
@@ -897,7 +919,16 @@ public partial class MainWindowViewModel : ViewModelBase
 
 							UnloadFile();
 						}
-						File.Move(path, Path.Join(Path.GetDirectoryName(path), result));
+						var newPath = Path.Join(Path.GetDirectoryName(path), result);
+
+                        if (!Path.Exists(newPath))
+						{
+							File.Move(path, newPath);
+						}
+						else
+						{
+							throw new Exception($"{newPath} already exists");
+						}
 					}
 					else // if it's a directory
 					{
@@ -912,18 +943,26 @@ public partial class MainWindowViewModel : ViewModelBase
 							UnloadFile();
 						}
 						var newPath = Path.Join(Path.GetDirectoryName(path), result);
-						Directory.Move(path, newPath);
 
-						if (selected.Parent == null) // re-open the directory if it is the open one
-						{
-							var folder = await FsUtils.TryGetFolderFromPathAsync(newPath);
-							if (folder != null)
-							{
-								UnloadFile();
-								FileTree.Remove(selected);
-								await OpenFolder(folder, false);
-							}
-						}
+                        if (!Path.Exists(newPath))
+                        {
+                            Directory.Move(path, newPath);
+
+                            if (selected.Parent == null) // re-open the directory if it is the open one
+                            {
+                                var folder = await FsUtils.TryGetFolderFromPathAsync(newPath);
+                                if (folder != null)
+                                {
+                                    UnloadFile();
+                                    FileTree.Remove(selected);
+                                    await OpenFolder(folder, false);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception($"{newPath} already exists");
+                        }
 					}
 				}
 			}
