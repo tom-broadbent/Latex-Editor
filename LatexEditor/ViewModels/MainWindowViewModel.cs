@@ -743,21 +743,13 @@ public partial class MainWindowViewModel : ViewModelBase
 				var filename = Path.GetFileName(copiedPath);
                 DirectoryNode newNode = null;
 
-                var box = MessageBoxManager.GetMessageBoxStandard(
-                        "Confirm",
-                        $"Are you sure you want to delete {selected.Title}? This action cannot be undone.",
-                        ButtonEnum.YesNo);
-
                 if (selected.SubNodes is null)
                 {
                     var path = Path.Join(selected.Parent.Path.LocalPath, filename);
-					if (Path.Exists(path))
+					while (Path.Exists(path))
 					{
-						var result = await box.ShowAsync();
-						if (result == ButtonResult.No)
-						{
-							return;
-						}
+						filename = "Copy of " + filename;
+                        path = Path.Join(selected.Parent.Path.LocalPath, filename);
                     }
 					var attr = File.GetAttributes(copiedPath);
 					if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
@@ -775,13 +767,10 @@ public partial class MainWindowViewModel : ViewModelBase
                 else
                 {
                     var path = Path.Join(selected.Path.LocalPath, filename);
-                    if (Path.Exists(path))
+                    while (Path.Exists(path))
                     {
-                        var result = await box.ShowAsync();
-                        if (result == ButtonResult.No)
-                        {
-                            return;
-                        }
+                        filename = "Copy of " + filename;
+                        path = Path.Join(selected.Path.LocalPath, filename);
                     }
                     var attr = File.GetAttributes(copiedPath);
                     if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
